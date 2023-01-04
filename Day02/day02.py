@@ -1,14 +1,27 @@
-TESTING = True
+TESTING = False
 
 def read_input():
     file.seek(0)
-    lines = [line.rstrip() for line in file]
-    print ("Input lines:", lines)
+    lines = [line.rstrip().split(" ") for line in file]
+    # print ("Input lines:", lines)
     return lines
 
 def part1():
-    input = read_input()
-    return
+    commands = read_input()
+
+    horizontal_position = 0
+    depth = 0
+
+    for command in commands:
+        match command[0]:
+            case "forward":
+                horizontal_position += int(command[1])
+            case "up":
+                depth -= int(command[1])
+            case "down":
+                depth += int(command[1])
+
+    return horizontal_position * depth
 
 def part2():
     return
