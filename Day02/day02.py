@@ -24,7 +24,23 @@ def part1():
     return horizontal_position * depth
 
 def part2():
-    return
+    commands = read_input()
+
+    horizontal_position = 0
+    depth = 0
+    aim = 0
+
+    for command in commands:
+        match command[0]:
+            case "forward":
+                horizontal_position += int(command[1])
+                depth += aim * int(command[1])
+            case "up":
+                aim -= int(command[1])
+            case "down":
+                aim += int(command[1])
+
+    return horizontal_position * depth
 
 
 if TESTING:
