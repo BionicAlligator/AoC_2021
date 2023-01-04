@@ -1,13 +1,21 @@
-TESTING = True
+TESTING = False
 
 def read_input():
     file.seek(0)
-    lines = [line.rstrip() for line in file]
-    print ("Input lines:", lines)
+    lines = [int(line.rstrip()) for line in file]
+    return lines
 
 def part1():
-    input = read_input()
-    return
+    depths = read_input()
+
+    depth_increases = 0
+    previous_depth = float('inf')
+
+    for reading in depths:
+        depth_increases += 1 if reading > previous_depth else 0
+        previous_depth = reading
+
+    return depth_increases
 
 def part2():
     return

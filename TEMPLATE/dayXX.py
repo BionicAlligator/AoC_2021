@@ -4,6 +4,7 @@ def read_input():
     file.seek(0)
     lines = [line.rstrip() for line in file]
     print ("Input lines:", lines)
+    return lines
 
 def part1():
     input = read_input()
