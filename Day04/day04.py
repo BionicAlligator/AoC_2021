@@ -36,32 +36,50 @@ def all_marked(row_or_column):
 def transpose(board):
     return list(map(list, zip(*board)))
 
-def check_winner(boards):
-    for board in boards:
-        for row in board:
-            if all_marked(row):
-                return board
+def board_is_winner(board):
+    for row in board:
+        if all_marked(row):
+            return True
 
-        for column in transpose(board):
-            if all_marked(column):
-                return board
+    for column in transpose(board):
+        if all_marked(column):
+            return True
 
     return False
 
+def check_for_winners(boards):
+    non_winning_boards = []
+    winning_boards = []
+
+    for board_num in range(0, len(boards)):
+        board = boards.pop()
+
+        if board_is_winner(board):
+            winning_boards.append(board)
+        else:
+            non_winning_boards.append(board)
+
+    return winning_boards, non_winning_boards
+
 def play_bingo(draw, boards):
     boards = clear_boards(boards)
+    winners = []
 
     for draw_num in draw:
         boards = mark_boards(boards, draw_num)
 
-        winning_board = check_winner(boards)
+        winning_boards, boards = check_for_winners(boards)
 
-        if (winning_board):
-            print(f"Winning board is {winning_board} after drawing {draw_num}")
-            return winning_board, draw_num
+        if (winning_boards):
+            # print(f"After drawing {draw_num}, winning boards are {winning_boards}")
+            winners.append((winning_boards, draw_num))
 
-    print(f"No winning board after all numbers have been drawn: {boards}")
-    exit(1)
+            if len(boards) == 0:
+                print("All boards are winners")
+                return winners
+
+    print(f"At least one board never wins: {boards}")
+    return winners
 
 def unmarked_nums(board):
     return [num for row in board for (num, marked) in row if not marked]
@@ -69,12 +87,18 @@ def unmarked_nums(board):
 def part1():
     draw, boards = read_input()
 
-    winning_board, winning_num = play_bingo(draw, boards)
+    winners = play_bingo(draw, boards)
+    winning_boards, winning_num = winners[0]
 
-    return sum(unmarked_nums(winning_board)) * winning_num
+    return sum(unmarked_nums(winning_boards[0])) * winning_num
 
 def part2():
-    return
+    draw, boards = read_input()
+
+    winners = play_bingo(draw, boards)
+    last_winning_boards, last_winning_num = winners[len(winners) - 1]
+
+    return sum(unmarked_nums(last_winning_boards[0])) * last_winning_num
 
 
 if TESTING:
