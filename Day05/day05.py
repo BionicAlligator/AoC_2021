@@ -92,6 +92,7 @@ def part1():
 
     return count_intersection_points(intersections, 2)
 
+
 def aggregate_vents_hv(vents):
     vent_points = {}
 
@@ -122,7 +123,6 @@ def aggregate_vents_tlbr(vent_points, vents):
             y += 1
 
     return vent_points
-
 
 def aggregate_vents_bltr(vent_points, vents):
     for (start_x, start_y), (end_x, end_y) in vents:
