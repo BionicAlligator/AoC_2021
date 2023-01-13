@@ -1,14 +1,14 @@
 import re
 
-TESTING = True
+TESTING = False
 
 def read_input():
     file.seek(0)
 
     horizontals = []
     verticals = []
-    # diagonals_tl-br = []
-    # diagonals_bl-tr = []
+    diagonals_tlbr = []
+    diagonals_bltr = []
 
     for line in file:
         nums = re.match("(\d+),(\d+) -> (\d+),(\d+)", line.rstrip())
@@ -20,9 +20,18 @@ def read_input():
             horizontals.append(( (min(x1, x2), y1), (max(x1, x2), y1) ))
         else:
             #Diagonal
-            continue
+            if x1 <= x2: #Already normalised
+                if y1 <= y2:
+                    diagonals_tlbr.append(((x1, y1), (x2, y2)))
+                else:
+                    diagonals_bltr.append(((x1, y1), (x2, y2)))
+            else: #Reverse
+                if y2 <= y1:
+                    diagonals_tlbr.append(((x2, y2), (x1, y1)))
+                else:
+                    diagonals_bltr.append(((x2, y2), (x1, y1)))
 
-    return horizontals, verticals
+    return horizontals, verticals, diagonals_tlbr, diagonals_bltr
 
 def intersect(area1, area2):
     (start1_x, start1_y), _ = area1
@@ -46,6 +55,7 @@ def intersect(area1, area2):
     return False  #No intersection
 
 def count_intersection_points(intersections, num_areas_intersecting):
+    #Expand to points in a set and count how many entries the set has at the end
     intersection_points = set()
 
     for (start_x, start_y), (end_x, end_y) in intersections[num_areas_intersecting - 1]:
@@ -59,13 +69,14 @@ def part1():
     intersections = []
 
     # Split into horizontal, vertical and diagonal lines
-    # Normalise such that top/left point is first coordinate in pair
-    horizontal_vents, vertical_vents = read_input()
+    # Normalise such that topmost/leftmost point is first coordinate in pair
+    horizontal_vents, vertical_vents, _, _ = read_input()
 
     intersections.append(horizontal_vents + vertical_vents)
 
     print(f"Intersections (1+): {intersections}")
 
+    # Work out overlaps
     intersections.append([])
 
     for area1_num in range(0, len(intersections[0])):
@@ -81,17 +92,76 @@ def part1():
 
     return count_intersection_points(intersections, 2)
 
-    # There are only 1m squares, so probably best to just use a 2D (1000x1000) grid
-    # Iterate through each line, incrementing every point
-    # Scan map and count all points where value is greater than 1
+def aggregate_vents_hv(vents):
+    vent_points = {}
 
-    # Alternative (more efficient) is to first work out overlaps, then just map those,
-    # or expand them to points in a set and count how many entries the set has at the end
+    for (start_x, start_y), (end_x, end_y) in vents:
+        for x in range(start_x, end_x + 1):
+            for y in range(start_y, end_y + 1):
+                if (x, y) in vent_points:
+                    num = vent_points.get((x, y))
+                    vent_points.update({(x, y): num + 1})
+                else:
+                    vent_points.update({(x, y): 1})
 
-    return
+    return vent_points
+
+def aggregate_vents_tlbr(vent_points, vents):
+    for (start_x, start_y), (end_x, end_y) in vents:
+        x = start_x
+        y = start_y
+
+        while x <= end_x:
+            if (x, y) in vent_points:
+                num = vent_points.get((x, y))
+                vent_points.update({(x, y): num + 1})
+            else:
+                vent_points.update({(x, y): 1})
+
+            x += 1
+            y += 1
+
+    return vent_points
+
+
+def aggregate_vents_bltr(vent_points, vents):
+    for (start_x, start_y), (end_x, end_y) in vents:
+        x = start_x
+        y = start_y
+
+        while x <= end_x:
+            if (x, y) in vent_points:
+                num = vent_points.get((x, y))
+                vent_points.update({(x, y): num + 1})
+            else:
+                vent_points.update({(x, y): 1})
+
+            x += 1
+            y -= 1
+
+    return vent_points
+
+def count_intersections(vent_points, min_num_intersections):
+    intersections = 0
+
+    for num in vent_points.values():
+        if num >= min_num_intersections:
+            intersections += 1
+
+    return intersections
 
 def part2():
-    return
+    # Split into horizontal, vertical and diagonal lines
+    # Normalise such that topmost/leftmost point is first coordinate in pair
+    horizontal_vents, vertical_vents, diagonal_vents_tlbr, diagonal_vents_bltr = read_input()
+
+    vent_points = aggregate_vents_hv(horizontal_vents + vertical_vents)
+    vent_points = aggregate_vents_tlbr(vent_points, diagonal_vents_tlbr)
+    vent_points = aggregate_vents_bltr(vent_points, diagonal_vents_bltr)
+
+    # print(f"Vent Points: {vent_points}")
+
+    return count_intersections(vent_points, 2)
 
 
 if TESTING:
