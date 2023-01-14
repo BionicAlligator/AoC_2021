@@ -25,8 +25,24 @@ def part1():
 
     return min_fuel_usage
 
+
+def nth_triangular_number(n):
+    return (n * (n + 1)) / 2
+
 def part2():
-    return
+    crab_positions = read_input()
+
+    lowest_position = min(crab_positions)
+    highest_position = max(crab_positions)
+
+    min_fuel_usage = float('inf')
+
+    for pos in range(lowest_position, highest_position + 1):
+        fuel_required = lambda crab_pos: int(nth_triangular_number(abs(pos - crab_pos)))
+
+        min_fuel_usage = min(min_fuel_usage, sum(list(map(fuel_required, crab_positions))))
+
+    return min_fuel_usage
 
 
 if TESTING:
