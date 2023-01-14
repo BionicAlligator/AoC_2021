@@ -10,7 +10,6 @@ def part1():
     notes = read_input()
 
     easy_patterns = list(map(lambda entry: list(filter(lambda pattern: len(pattern) in [2, 3, 4, 7], entry[1])), notes))
-
     print(f"Easy patterns: {easy_patterns}")
 
     return sum(len(pattern) for pattern in easy_patterns)
@@ -59,17 +58,14 @@ def part2():
                         digits[2] = sorted(pattern)
 
         # print (digits)
-
         output_num = ""
 
         for pattern in output:
-
             for digit, digit_pattern in enumerate(digits):
                 if sorted(pattern) == digit_pattern:
                     output_num += str(digit)
 
         # print(f"{output_num}")
-
         total += int(output_num)
 
     return total
