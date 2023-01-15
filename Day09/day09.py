@@ -1,9 +1,9 @@
-TESTING = True
+TESTING = False
 
 def read_input():
     file.seek(0)
     points = [[int(p) for p in line.rstrip()] for line in file]
-    print ("Input points:", points)
+    # print ("Input points:", points)
     return points
 
 def adjacent_points(point, points):
@@ -35,44 +35,45 @@ def find_low_points(points):
                 low_points.update({(x, y): point_height})
 
     # print(f"Low points: {low_points}")
-
     return low_points
 
-def find_basin(low_point, points):
-    basin = []
+def find_basin(low_point, low_point_height, points):
+    basin = set()
 
-    points_to_expand = [low_point]
+    points_to_expand = {low_point: low_point_height}
 
     while points_to_expand:
-        point = points_to_expand.pop()
-        basin.append(point)
+        point, point_height = points_to_expand.popitem()
+        basin.add(point)
 
-        # for adjacent_point, adjacent_point_height in adjacent_points(point, points).items():
-        #     if adjacent_point_height >= point.value
+        for adjacent_point, adjacent_point_height in adjacent_points(point, points).items():
+            if 9 > adjacent_point_height > point_height:
+                points_to_expand.update({adjacent_point: adjacent_point_height})
 
     return basin
 
 def find_basins(points):
     basins = []
 
-    for low_point in find_low_points(points):
-        basins.append(find_basin(low_point, points))
+    for low_point, low_point_height in find_low_points(points).items():
+        basin = find_basin(low_point, low_point_height, points)
+        basins.append((basin, len(basin)))
 
     return basins
 
 def part1():
     points = read_input()
-
     low_points = find_low_points(points)
-
     return sum(low_points.values(), len(low_points))
 
 def part2():
     points = read_input()
 
     basins = find_basins(points)
+    basins.sort(key=lambda basin: basin[1], reverse=True)
+    # print(f"Basins: {basins}")
 
-    return
+    return basins[0][1] * basins[1][1] * basins[2][1]
 
 
 if TESTING:
