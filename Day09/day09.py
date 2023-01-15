@@ -1,4 +1,4 @@
-TESTING = False
+TESTING = True
 
 def read_input():
     file.seek(0)
@@ -6,17 +6,23 @@ def read_input():
     print ("Input points:", points)
     return points
 
-def is_lowest_in_vicinity(position, cell, points):
+def adjacent_points(point, points):
     ADJACENT_OFFSETS = [(0, -1), (0, 1), (-1, 0), (1, 0)]
 
+    adjacent_points = {}
+
     for offset in ADJACENT_OFFSETS:
-        adj_x, adj_y = tuple(map(sum, zip(position, offset)))
+        adj_x, adj_y = tuple(map(sum, zip(point, offset)))
 
         if (0 <= adj_y < len(points)) and (0 <= adj_x < len(points[0])):
-            # print(f"Checking {position}={cell} against {(adj_x, adj_y)}={points[adj_y][adj_x]}")
+            adjacent_points.update({(adj_x, adj_y): points[adj_y][adj_x]})
 
-            if points[adj_y][adj_x] <= cell:
-                return False
+    return adjacent_points
+
+def is_lowest_in_vicinity(point, point_height, points):
+    for adjacent_point_height in adjacent_points(point, points).values():
+        if adjacent_point_height <= point_height:
+            return False
 
     return True
 
@@ -24,19 +30,38 @@ def find_low_points(points):
     low_points = {}
 
     for y, row in enumerate(points):
-        for x, cell in enumerate(row):
-            if is_lowest_in_vicinity((x, y), cell, points):
-                low_points.update({(x, y): cell + 1})
+        for x, point_height in enumerate(row):
+            if is_lowest_in_vicinity((x, y), point_height, points):
+                low_points.update({(x, y): point_height + 1})
 
-    print(f"Low points: {low_points}")
+    # print(f"Low points: {low_points}")
 
     return low_points
+
+def find_basin(low_point, points):
+    basin = []
+
+
+
+    return basin
+
+def find_basins(points):
+    basins = []
+
+    for low_point in find_low_points(points):
+        basins.append(find_basin(low_point, points))
+
+    return basins
 
 def part1():
     points = read_input()
     return sum(find_low_points(points).values())
 
 def part2():
+    points = read_input()
+
+    basins = find_basins(points)
+
     return
 
 
