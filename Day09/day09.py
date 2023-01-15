@@ -32,7 +32,7 @@ def find_low_points(points):
     for y, row in enumerate(points):
         for x, point_height in enumerate(row):
             if is_lowest_in_vicinity((x, y), point_height, points):
-                low_points.update({(x, y): point_height + 1})
+                low_points.update({(x, y): point_height})
 
     # print(f"Low points: {low_points}")
 
@@ -41,7 +41,14 @@ def find_low_points(points):
 def find_basin(low_point, points):
     basin = []
 
+    points_to_expand = [low_point]
 
+    while points_to_expand:
+        point = points_to_expand.pop()
+        basin.append(point)
+
+        # for adjacent_point, adjacent_point_height in adjacent_points(point, points).items():
+        #     if adjacent_point_height >= point.value
 
     return basin
 
@@ -55,7 +62,10 @@ def find_basins(points):
 
 def part1():
     points = read_input()
-    return sum(find_low_points(points).values())
+
+    low_points = find_low_points(points)
+
+    return sum(low_points.values(), len(low_points))
 
 def part2():
     points = read_input()
