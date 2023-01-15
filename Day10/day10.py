@@ -22,7 +22,7 @@ def parse_line(line):
         else: #Must be a matching closing delimiter
             required_closing_chars.pop()
 
-    return (INCOMPLETE, required_closing_chars) if required_closing_chars else (OK, "")
+    return (INCOMPLETE, reversed(required_closing_chars)) if required_closing_chars else (OK, "")
 
 def parse(lines):
     error_chars = []
@@ -50,8 +50,6 @@ def autocompleter_score(completion_strings):
     scores = [0] * len(completion_strings)
 
     for string_num, completion_string in enumerate(completion_strings):
-        completion_string.reverse()
-
         for char in completion_string:
             scores[string_num] *= 5
             scores[string_num] += AUTOCOMPLETE_CHAR_VALUES[char]
