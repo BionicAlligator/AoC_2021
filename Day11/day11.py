@@ -53,12 +53,10 @@ def part1():
         flashes, octopii, _ = flash(flashes, octopii)
 
     # print("Octopii:", octopii)
-
     return flashes
 
 def part2():
     octopii = read_input()
-    # print("Octopii:", octopii)
 
     flashes = 0
     flashed_this_step = 0
@@ -68,8 +66,6 @@ def part2():
         step += 1
         octopii = inject_energy(octopii)
         flashes, octopii, flashed_this_step = flash(flashes, octopii)
-
-    # print("Octopii:", octopii)
 
     print(f"{flashed_this_step} octopuses flashed on step {step}")
     return step
