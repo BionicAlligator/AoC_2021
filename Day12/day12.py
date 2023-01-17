@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 TESTING = False
 
 def add_cave_info(caves, cave1, cave2):
@@ -14,21 +16,21 @@ def read_input():
     file.seek(0)
     caves = {}
     routes = [tuple(line.rstrip().split('-')) for line in file]
-    print("Routes:", routes)
+    # print("Routes:", routes)
 
     for cave1, cave2 in routes:
         add_cave_info(caves, cave1, cave2)
         add_cave_info(caves, cave2, cave1)
 
-    print("Caves:", caves)
+    # print("Caves:", caves)
     return caves
 
 def df_search(caves, current, target, path_so_far, successful_paths):
-    current_path = path_so_far.copy()
-    current_path.append(current)
+    current_path = path_so_far + "->"
+    current_path += current[:-5] if "_copy" in current else current
 
     if current == target:
-        successful_paths.append(current_path)
+        successful_paths.add(current_path)
     else:
         new_caves = caves.copy()
         current_cave = new_caves[current].copy()
@@ -43,15 +45,40 @@ def df_search(caves, current, target, path_so_far, successful_paths):
 def part1():
     caves = read_input()
 
-    paths = []
+    paths = set()
 
-    df_search(caves, "start", "end", [], paths)
+    df_search(caves, "start", "end", "", paths)
 
     print(f"Successful paths: {paths}")
     return len(paths)
 
 def part2():
-    return
+    caves = read_input()
+
+    paths = set()
+
+    for cave_name, cave in caves.items():
+        # if the cave is small and is not 'start' or 'end',
+        # copy it, give it a different name (cave + "_copy") and
+        # then go through each cave to check for routes to it and duplicate those routes
+        # to point to the new duplicate cave
+        if not cave["is_large"] and cave_name not in ["start", "end"]:
+            cave_copy = deepcopy(cave)
+            cave_copy_name = cave_name + "_copy"
+
+            new_caves = deepcopy(caves)
+            new_caves.update({cave_copy_name: cave_copy})
+
+            for other_cave_name, other_cave in new_caves.items():
+                other_cave_routes = other_cave["routes"]
+
+                if cave_name in other_cave_routes:
+                    other_cave_routes.append(cave_copy_name)
+
+            df_search(new_caves, "start", "end", "", paths)
+
+    print(f"Successful paths: {paths}")
+    return len(paths)
 
 
 if TESTING:
