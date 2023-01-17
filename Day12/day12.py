@@ -4,7 +4,7 @@ TESTING = False
 
 def add_cave_info(caves, cave1, cave2):
     if cave1 not in caves:
-        cave_entry = {"routes": [cave2], "is_large": cave1.isupper(), "visited": False}
+        cave_entry = {"routes": [cave2], "is_large": cave1.isupper(), "visits_remaining": 1}
         caves.update({cave1: cave_entry})
     else:
         cave_routes = caves[cave1]["routes"]
@@ -26,8 +26,7 @@ def read_input():
     return caves
 
 def df_search(caves, current, target, path_so_far, successful_paths):
-    current_path = path_so_far + "->"
-    current_path += current[:-5] if "_copy" in current else current
+    current_path = path_so_far + "->" + current
 
     if current == target:
         successful_paths.add(current_path)
@@ -35,8 +34,8 @@ def df_search(caves, current, target, path_so_far, successful_paths):
         new_caves = caves.copy()
         current_cave = new_caves[current].copy()
 
-        if current_cave["is_large"] or not current_cave["visited"]:
-            current_cave["visited"] = True
+        if current_cave["is_large"] or current_cave["visits_remaining"] > 0:
+            current_cave["visits_remaining"] -= 1
             new_caves.update({current: current_cave})
 
             for cave in current_cave["routes"]:
@@ -49,7 +48,7 @@ def part1():
 
     df_search(caves, "start", "end", "", paths)
 
-    print(f"Successful paths: {paths}")
+    # print(f"Successful paths: {paths}")
     return len(paths)
 
 def part2():
@@ -58,26 +57,23 @@ def part2():
     paths = set()
 
     for cave_name, cave in caves.items():
-        # if the cave is small and is not 'start' or 'end',
-        # copy it, give it a different name (cave + "_copy") and
-        # then go through each cave to check for routes to it and duplicate those routes
-        # to point to the new duplicate cave
+        # if the cave is small and is not 'start' or 'end', set the number of times
+        # it can be visited to 2 then go through each cave to check for routes to it
+        # and duplicate those routes
         if not cave["is_large"] and cave_name not in ["start", "end"]:
-            cave_copy = deepcopy(cave)
-            cave_copy_name = cave_name + "_copy"
-
             new_caves = deepcopy(caves)
-            new_caves.update({cave_copy_name: cave_copy})
+            multi_visit_cave = new_caves[cave_name]
+            multi_visit_cave["visits_remaining"] = 2
 
-            for other_cave_name, other_cave in new_caves.items():
+            for other_cave in new_caves.values():
                 other_cave_routes = other_cave["routes"]
 
                 if cave_name in other_cave_routes:
-                    other_cave_routes.append(cave_copy_name)
+                    other_cave_routes.append(cave_name)
 
             df_search(new_caves, "start", "end", "", paths)
 
-    print(f"Successful paths: {paths}")
+    # print(f"Successful paths: {paths}")
     return len(paths)
 
 
