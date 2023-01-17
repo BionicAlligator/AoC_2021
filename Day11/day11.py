@@ -40,24 +40,39 @@ def flash(flashes, octopii):
     for x, y in flashed:
         new_octopii[y][x] = 0
 
-    return new_flashes, new_octopii
+    return new_flashes, new_octopii, len(flashed)
 
 def part1():
     octopii = read_input()
-    print("Octopii:", octopii)
+    # print("Octopii:", octopii)
 
     flashes = 0
 
     for step in range(100):
         octopii = inject_energy(octopii)
-        flashes, octopii = flash(flashes, octopii)
+        flashes, octopii, _ = flash(flashes, octopii)
 
-    print("Octopii:", octopii)
+    # print("Octopii:", octopii)
 
     return flashes
 
 def part2():
-    return
+    octopii = read_input()
+    # print("Octopii:", octopii)
+
+    flashes = 0
+    flashed_this_step = 0
+    step = 0
+
+    while flashed_this_step < 100:
+        step += 1
+        octopii = inject_energy(octopii)
+        flashes, octopii, flashed_this_step = flash(flashes, octopii)
+
+    # print("Octopii:", octopii)
+
+    print(f"{flashed_this_step} octopuses flashed on step {step}")
+    return step
 
 
 if TESTING:
