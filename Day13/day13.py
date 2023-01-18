@@ -64,7 +64,13 @@ def part1():
     return len(dots)
 
 def part2():
-    return
+    dots, folds = read_input()
+
+    for axis, line in folds:
+        dots = fold(dots, axis, line)
+
+    print_page(dots)
+    return len(dots)
 
 
 if TESTING:
