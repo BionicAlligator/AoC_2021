@@ -34,8 +34,8 @@ def read_input():
             if fold:
                 folds.append((0 if fold[1]=='x' else 1, int(fold[2])))
 
-    print ("Dots:", dots)
-    print ("Folds:", folds)
+    # print("Dots:", dots)
+    # print("Folds:", folds)
     return dots, folds
 
 def fold(dots, axis, line):
@@ -60,7 +60,7 @@ def part1():
 
     dots = fold(dots, axis, line)
 
-    print_page(dots)
+    # print_page(dots)
     return len(dots)
 
 def part2():
