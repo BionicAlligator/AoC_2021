@@ -1,4 +1,4 @@
-TESTING = True
+TESTING = False
 
 def read_input():
     file.seek(0)
@@ -117,16 +117,15 @@ def analyse(polymer):
     chars = {}
     pairs = {}
 
-    for char in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":
-        count = polymer.count(char)
+    for index in range(len(polymer)):
+        char = polymer[index]
+        char_count = chars.get(char, 0)
+        chars.update({char: char_count + 1})
 
-        if count > 0:
-            chars.update({char: count})
-
-    for index in range(0, len(polymer) - 1):
-        pair = polymer[index:index + 2]
-        count = polymer.count(pair)
-        pairs.update({pair: count})
+        if index < (len(polymer) - 1):
+            pair = polymer[index:index + 2]
+            pair_count = pairs.get(pair, 0)
+            pairs.update({pair: pair_count + 1})
 
     return chars, pairs
 
@@ -141,7 +140,7 @@ def expand_polymer(chars, pairs, insertion_rules):
         new_pair2 = new_char + pair[1]
 
         new_chars[new_char] = new_chars.get(new_char, 0) + count
-        new_pairs[pair] = new_pairs.get(pair) - count
+        new_pairs[pair] -= count
         new_pairs[new_pair1] = new_pairs.get(new_pair1, 0) + count
         new_pairs[new_pair2] = new_pairs.get(new_pair2, 0) + count
 
@@ -153,7 +152,6 @@ def part2_fast():
     # iteration), we can instead count the instances of characters and pairs that will
     # result from each iteration.  Each pair leads to a new character and two new pairs.
     template, insertion_rules = read_input()
-    print(f"{template = }, {insertion_rules = }")
 
     chars, pairs = analyse(template)
 
