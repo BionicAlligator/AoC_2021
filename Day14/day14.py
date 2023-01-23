@@ -1,4 +1,4 @@
-TESTING = False
+TESTING = True
 
 def read_input():
     file.seek(0)
@@ -98,7 +98,7 @@ def part1():
     return score
 
 
-def part2():
+def part2_slow():
     polymer, insertion_rules = read_input()
 
     print(f"{polymer = }, {insertion_rules = }")
@@ -113,10 +113,61 @@ def part2():
     return score
 
 
+def analyse(polymer):
+    chars = {}
+    pairs = {}
+
+    for char in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":
+        count = polymer.count(char)
+
+        if count > 0:
+            chars.update({char: count})
+
+    for index in range(0, len(polymer) - 1):
+        pair = polymer[index:index + 2]
+        count = polymer.count(pair)
+        pairs.update({pair: count})
+
+    return chars, pairs
+
+
+def expand_polymer(chars, pairs, insertion_rules):
+    new_chars = chars.copy()
+    new_pairs = pairs.copy()
+
+    for pair, count in pairs.items():
+        new_char = insertion_rules[pair]
+        new_pair1 = pair[0] + new_char
+        new_pair2 = new_char + pair[1]
+
+        new_chars[new_char] = new_chars.get(new_char, 0) + count
+        new_pairs[pair] = new_pairs.get(pair) - count
+        new_pairs[new_pair1] = new_pairs.get(new_pair1, 0) + count
+        new_pairs[new_pair2] = new_pairs.get(new_pair2, 0) + count
+
+    return new_chars, new_pairs
+
+
+def part2_fast():
+    # Rather than expanding the polymer (exponential growth - it doubles in size with each
+    # iteration), we can instead count the instances of characters and pairs that will
+    # result from each iteration.  Each pair leads to a new character and two new pairs.
+    template, insertion_rules = read_input()
+    print(f"{template = }, {insertion_rules = }")
+
+    chars, pairs = analyse(template)
+
+    for step in range(40):
+        chars, pairs = expand_polymer(chars, pairs, insertion_rules)
+
+    return score_polymer(chars)
+
+
 if TESTING:
     file = open("sampleInput.txt", "r")
 else:
     file = open("input.txt", "r")
 
 print("Part 1: ", part1())
-print("Part 2: ", part2())
+# print("Part 2: ", part2_slow())
+print("Part 2: ", part2_fast())
