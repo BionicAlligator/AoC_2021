@@ -1,4 +1,4 @@
-TESTING = False
+TESTING = True
 
 def read_input():
     file.seek(0)
@@ -30,20 +30,25 @@ def a_star_search(risk_levels, start, end):
         point_min_risk = details["min_risk"]
 
         for offset_x, offset_y in OFFSETS:
-            x = point_x + offset_x
-            y = point_y + offset_y
-            adjacent_point = (x, y)
+            adjacent_x = point_x + offset_x
+            adjacent_y = point_y + offset_y
+            adjacent_point = (adjacent_x, adjacent_y)
 
-            if (max_x >= x >= 0) and (max_y >= y >= 0) and \
+            if (max_x >= adjacent_x >= 0) and (max_y >= adjacent_y >= 0) and \
                     not (adjacent_point in visited_points):
-                min_risk = point_min_risk + risk_levels[y][x]
-                best_possible = min_risk + max_x - x + max_y - y
+                min_risk = point_min_risk + risk_levels[adjacent_y][adjacent_x]
+
+                #Lowest possible risk assuming a direct path from here to the end with
+                #every step along the way being a risk level of 1
+                best_possible = min_risk + max_x - adjacent_x + max_y - adjacent_y
 
                 if adjacent_point in points_to_check:
                     if points_to_check[adjacent_point]["min_risk"] < min_risk:
                         continue
 
-                points_to_check.append({adjacent_point: {"previous": point, "min_risk": min_risk, "best_possible": best_possible}})
+                points_to_check.append({adjacent_point: {"previous": point,
+                                                         "min_risk": min_risk,
+                                                         "best_possible": best_possible}})
 
         points_to_check.sort(key=lambda d: list(d.values())[0]["best_possible"], reverse=True)
 
@@ -57,11 +62,12 @@ def a_star_search(risk_levels, start, end):
 # TODO: Implement with objects instead of dicts
 def part1():
     risk_levels = read_input()
-    print("Input:", risk_levels)
+    print(f"{risk_levels = }")
 
-    max_x, max_y = get_cave_extents(risk_levels)
+    start_point = (0, 0)
+    end_point = get_cave_extents(risk_levels)
 
-    return a_star_search(risk_levels, (0, 0), (max_x, max_y))
+    return a_star_search(risk_levels, start_point, end_point)
 
 def part2():
     return
