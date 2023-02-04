@@ -1,4 +1,4 @@
-TESTING = True
+TESTING = False
 
 def read_input():
     file.seek(0)
@@ -16,10 +16,10 @@ def a_star_search(risk_levels, start, end):
     OFFSETS = [(-1, 0), (1, 0), (0, -1), (0, 1)]
     max_x, max_y = get_cave_extents(risk_levels)
 
-    points_to_check = [{start: {"previous": None, "min_risk": 0, "best_possible": 0}}]
+    points_to_check = {start: {"previous": None, "min_risk": 0, "best_possible": 0}}
     visited_points = {}
     # print(f"{points_to_check = }")
-    point, details = list(points_to_check.pop().items())[0]
+    point, details = points_to_check.popitem()
 
     while point != end:
         if not (len(visited_points) % 100):
@@ -46,15 +46,19 @@ def a_star_search(risk_levels, start, end):
                     if points_to_check[adjacent_point]["min_risk"] < min_risk:
                         continue
 
-                points_to_check.append({adjacent_point: {"previous": point,
+                points_to_check.update({adjacent_point: {"previous": point,
                                                          "min_risk": min_risk,
                                                          "best_possible": best_possible}})
 
-        points_to_check.sort(key=lambda d: list(d.values())[0]["best_possible"], reverse=True)
+                points_to_check = dict(sorted(points_to_check.items(),
+                                              key=lambda item: item[1].get("best_possible"),
+                                              reverse=True))
+
+        # points_to_check.sort(key=lambda d: list(d.values())[0]["best_possible"], reverse=True)
 
         # print(f"{points_to_check = }")
 
-        point, details = list(points_to_check.pop().items())[0]
+        point, details = points_to_check.popitem()
 
     return details["min_risk"]
 
