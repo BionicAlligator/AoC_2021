@@ -1,4 +1,5 @@
 TESTING = False
+TILE_MULTIPLIER = 1
 
 def read_input():
     file.seek(0)
@@ -7,58 +8,74 @@ def read_input():
 
 
 def get_cave_extents(risk_levels):
-    max_y = len(risk_levels) - 1
-    max_x = len(risk_levels[0]) - 1
+    max_y = TILE_MULTIPLIER * len(risk_levels) - 1
+    max_x = TILE_MULTIPLIER * len(risk_levels[0]) - 1
     return max_x, max_y
 
 
-def a_star_search(risk_levels, start, end):
+def get_risk_level(point_x, point_y, risk_levels):
+    reference_x = point_x % len(risk_levels[0])
+    reference_y = point_y % len(risk_levels)
+    reference_risk_level = risk_levels[reference_y][reference_x] - 1
+
+    x_adjustment = point_x // len(risk_levels[0])
+    y_adjustment = point_y // len(risk_levels)
+    adjusted_risk_level = reference_risk_level + x_adjustment + y_adjustment
+
+    constrained_risk_level = (adjusted_risk_level % 9) + 1
+
+    return constrained_risk_level
+
+
+def visit_point(point, details, risk_levels, points_to_visit, visited_points):
     OFFSETS = [(-1, 0), (1, 0), (0, -1), (0, 1)]
     max_x, max_y = get_cave_extents(risk_levels)
 
-    points_to_check = {start: {"previous": None, "min_risk": 0, "best_possible": 0}}
+    if not (len(visited_points) % 100):
+        print(f"Visiting point {point}   {len(visited_points)} points visited so far")
+
+    visited_points.update({point: details})
+
+    point_x, point_y = point
+    point_min_risk = details["min_risk"]
+
+    for offset_x, offset_y in OFFSETS:
+        adjacent_x = point_x + offset_x
+        adjacent_y = point_y + offset_y
+        adjacent_point = (adjacent_x, adjacent_y)
+
+        if (max_x >= adjacent_x >= 0) and (max_y >= adjacent_y >= 0) and \
+                not (adjacent_point in visited_points):
+            min_risk = point_min_risk + get_risk_level(adjacent_x, adjacent_y, risk_levels)
+
+            # Lowest possible risk assuming a direct path from here to the end with
+            # every step along the way being a risk level of 1
+            best_possible = min_risk + max_x - adjacent_x + max_y - adjacent_y
+
+            if adjacent_point in points_to_visit:
+                if points_to_visit[adjacent_point]["min_risk"] < min_risk:
+                    continue
+
+            points_to_visit.update({adjacent_point: {"previous": point,
+                                                     "min_risk": min_risk,
+                                                     "best_possible": best_possible}})
+
+            points_to_visit = dict(sorted(points_to_visit.items(),
+                                          key=lambda item: item[1].get("best_possible"),
+                                          reverse=True))
+
+    return points_to_visit
+
+
+def a_star_search(risk_levels, start, end):
+    points_to_visit = {start: {"previous": None, "min_risk": 0, "best_possible": 0}}
     visited_points = {}
-    # print(f"{points_to_check = }")
-    point, details = points_to_check.popitem()
+
+    point, details = points_to_visit.popitem()
 
     while point != end:
-        if not (len(visited_points) % 100):
-            print(f"Checking point {point} Num visited: {len(visited_points)}")
-        visited_points.update({point: details})
-
-        point_x, point_y = point
-        point_min_risk = details["min_risk"]
-
-        for offset_x, offset_y in OFFSETS:
-            adjacent_x = point_x + offset_x
-            adjacent_y = point_y + offset_y
-            adjacent_point = (adjacent_x, adjacent_y)
-
-            if (max_x >= adjacent_x >= 0) and (max_y >= adjacent_y >= 0) and \
-                    not (adjacent_point in visited_points):
-                min_risk = point_min_risk + risk_levels[adjacent_y][adjacent_x]
-
-                #Lowest possible risk assuming a direct path from here to the end with
-                #every step along the way being a risk level of 1
-                best_possible = min_risk + max_x - adjacent_x + max_y - adjacent_y
-
-                if adjacent_point in points_to_check:
-                    if points_to_check[adjacent_point]["min_risk"] < min_risk:
-                        continue
-
-                points_to_check.update({adjacent_point: {"previous": point,
-                                                         "min_risk": min_risk,
-                                                         "best_possible": best_possible}})
-
-                points_to_check = dict(sorted(points_to_check.items(),
-                                              key=lambda item: item[1].get("best_possible"),
-                                              reverse=True))
-
-        # points_to_check.sort(key=lambda d: list(d.values())[0]["best_possible"], reverse=True)
-
-        # print(f"{points_to_check = }")
-
-        point, details = points_to_check.popitem()
+        points_to_visit = visit_point(point, details, risk_levels, points_to_visit, visited_points)
+        point, details = points_to_visit.popitem()
 
     return details["min_risk"]
 
@@ -74,7 +91,16 @@ def part1():
     return a_star_search(risk_levels, start_point, end_point)
 
 def part2():
-    return
+    global TILE_MULTIPLIER
+    TILE_MULTIPLIER = 5
+
+    risk_levels = read_input()
+    print(f"{risk_levels = }")
+
+    start_point = (0, 0)
+    end_point = get_cave_extents(risk_levels)
+
+    return a_star_search(risk_levels, start_point, end_point)
 
 
 if TESTING:
