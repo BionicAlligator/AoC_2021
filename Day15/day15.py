@@ -1,5 +1,4 @@
 TESTING = False
-TILE_MULTIPLIER = 1
 
 def read_input():
     file.seek(0)
@@ -8,8 +7,8 @@ def read_input():
 
 
 def get_cave_extents(risk_levels):
-    max_y = TILE_MULTIPLIER * len(risk_levels) - 1
-    max_x = TILE_MULTIPLIER * len(risk_levels[0]) - 1
+    max_y = len(risk_levels) - 1
+    max_x = len(risk_levels[0]) - 1
     return max_x, max_y
 
 
@@ -23,6 +22,11 @@ def get_risk_level(point_x, point_y, risk_levels):
     constrained_risk_level = ((adjusted_risk_level - 1) % 9) + 1
 
     return constrained_risk_level
+
+
+def extend_map(risk_levels, multiplier):
+    return [[get_risk_level(x, y, risk_levels) for x in range(len(risk_levels[0]) * multiplier)]
+            for y in range(len(risk_levels) * multiplier)]
 
 
 def visit_point(point, details, risk_levels, points_to_visit, visited_points):
@@ -44,7 +48,7 @@ def visit_point(point, details, risk_levels, points_to_visit, visited_points):
 
         if (max_x >= adjacent_x >= 0) and (max_y >= adjacent_y >= 0) and \
                 not (adjacent_point in visited_points):
-            min_risk = point_min_risk + get_risk_level(adjacent_x, adjacent_y, risk_levels)
+            min_risk = point_min_risk + risk_levels[adjacent_y][adjacent_x]
 
             # Lowest possible risk assuming a direct path from here to the end with
             # every step along the way being a risk level of 1
@@ -76,9 +80,6 @@ def a_star_search(risk_levels, start, end):
     return details["min_risk"]
 
 
-# TODO: Implement "Fast Dijkstra" - when you first encounter an adjacent node, add it to a list
-# with the risk to get there from the current node. After that, ignore it if it comes up as an adjacent
-# node for a future visited node because the risk to get there can not be less than the current value it holds
 # TODO: Implement with objects instead of dicts
 # TODO: Implement DFS with pruning
 # TODO: Implement BFS
@@ -92,10 +93,7 @@ def part1():
     return a_star_search(risk_levels, start_point, end_point)
 
 def part2():
-    global TILE_MULTIPLIER
-    TILE_MULTIPLIER = 5
-
-    risk_levels = read_input()
+    risk_levels = extend_map(read_input(), 5)
     print(f"{risk_levels = }")
 
     start_point = (0, 0)
