@@ -61,7 +61,7 @@ def visit_point(point, risk_levels, points_to_visit, visited_points, point_detai
             elif min_risk < point_details[adjacent_point]["min_risk"]:
                 point_details.update({adjacent_point: {"min_risk": min_risk, "previous": point}})
 
-    return points_to_visit
+    return
 
 
 def a_star_search(risk_levels, start, end):
@@ -73,7 +73,7 @@ def a_star_search(risk_levels, start, end):
     _, point = heappop(points_to_visit)
 
     while point != end:
-        points_to_visit = visit_point(point, risk_levels, points_to_visit, visited_points, point_details)
+        visit_point(point, risk_levels, points_to_visit, visited_points, point_details)
         _, point = heappop(points_to_visit)
 
     return point_details[end]["min_risk"]
