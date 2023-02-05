@@ -4,7 +4,6 @@
 from heapq import heappush, heappop
 
 TESTING = False
-TILE_MULTIPLIER = 1
 
 def read_input():
     file.seek(0)
@@ -13,8 +12,8 @@ def read_input():
 
 
 def get_cave_extents(risk_levels):
-    max_y = TILE_MULTIPLIER * len(risk_levels) - 1
-    max_x = TILE_MULTIPLIER * len(risk_levels[0]) - 1
+    max_y = len(risk_levels) - 1
+    max_x = len(risk_levels[0]) - 1
     return max_x, max_y
 
 
