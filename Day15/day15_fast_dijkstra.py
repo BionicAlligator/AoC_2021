@@ -1,3 +1,9 @@
+# "Fast Dijkstra" algorithm - when you first encounter an adjacent node, add it to a list
+# with the risk to get there from the current node. After that, ignore it if it comes up as an adjacent
+# node for a future visited node because the risk to get there can not be less than the current value it holds
+# However, does not appear to yield significant speed improvements over A* search
+# Does not work in conjunction with A* search
+
 TESTING = False
 TILE_MULTIPLIER = 1
 
@@ -43,21 +49,21 @@ def visit_point(point, details, risk_levels, points_to_visit, visited_points):
         adjacent_point = (adjacent_x, adjacent_y)
 
         if (max_x >= adjacent_x >= 0) and (max_y >= adjacent_y >= 0) and \
-                not (adjacent_point in visited_points):
+                not (adjacent_point in visited_points) and \
+                not (adjacent_point in points_to_visit):
             min_risk = point_min_risk + get_risk_level(adjacent_x, adjacent_y, risk_levels)
 
             # Lowest possible risk assuming a direct path from here to the end with
             # every step along the way being a risk level of 1
             best_possible = min_risk + max_x - adjacent_x + max_y - adjacent_y
 
-            if not (adjacent_point in points_to_visit) or \
-                    min_risk < points_to_visit[adjacent_point]["min_risk"]:
-                points_to_visit.update({adjacent_point: {"previous": point,
-                                                         "min_risk": min_risk,
-                                                         "best_possible": best_possible}})
+            points_to_visit.update({adjacent_point: {"previous": point,
+                                                     "min_risk": min_risk,
+                                                     "best_possible": best_possible}})
 
     points_to_visit = dict(sorted(points_to_visit.items(),
-                                  key=lambda item: item[1].get("best_possible"),
+                                  key=lambda item: item[1].get("min_risk"),
+                                  # key=lambda item: item[1].get("best_possible"),
                                   reverse=True))
 
     return points_to_visit
@@ -76,12 +82,6 @@ def a_star_search(risk_levels, start, end):
     return details["min_risk"]
 
 
-# TODO: Implement "Fast Dijkstra" - when you first encounter an adjacent node, add it to a list
-# with the risk to get there from the current node. After that, ignore it if it comes up as an adjacent
-# node for a future visited node because the risk to get there can not be less than the current value it holds
-# TODO: Implement with objects instead of dicts
-# TODO: Implement DFS with pruning
-# TODO: Implement BFS
 def part1():
     risk_levels = read_input()
     print(f"{risk_levels = }")

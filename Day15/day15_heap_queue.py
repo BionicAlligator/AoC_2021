@@ -1,3 +1,8 @@
+# Uses a priority queue (implemented with heapq) such that the order of points to visit is maintained
+# as items are pushed and popped, thus avoiding need for expensive sorting procedures
+# However, does not appear to yield significant speed improvements
+from heapq import heappush, heappop
+
 TESTING = False
 TILE_MULTIPLIER = 1
 
@@ -25,17 +30,17 @@ def get_risk_level(point_x, point_y, risk_levels):
     return constrained_risk_level
 
 
-def visit_point(point, details, risk_levels, points_to_visit, visited_points):
+def visit_point(point, risk_levels, points_to_visit, visited_points, point_details):
     OFFSETS = [(-1, 0), (1, 0), (0, -1), (0, 1)]
     max_x, max_y = get_cave_extents(risk_levels)
 
     if not (len(visited_points) % 1000):
         print(f"Visiting point {point}   {len(visited_points)} points visited so far")
 
-    visited_points.update({point: details})
+    visited_points.update({point: point_details[point]})
 
     point_x, point_y = point
-    point_min_risk = details["min_risk"]
+    point_min_risk = point_details[point]["min_risk"]
 
     for offset_x, offset_y in OFFSETS:
         adjacent_x = point_x + offset_x
@@ -50,38 +55,30 @@ def visit_point(point, details, risk_levels, points_to_visit, visited_points):
             # every step along the way being a risk level of 1
             best_possible = min_risk + max_x - adjacent_x + max_y - adjacent_y
 
-            if not (adjacent_point in points_to_visit) or \
-                    min_risk < points_to_visit[adjacent_point]["min_risk"]:
-                points_to_visit.update({adjacent_point: {"previous": point,
-                                                         "min_risk": min_risk,
-                                                         "best_possible": best_possible}})
-
-    points_to_visit = dict(sorted(points_to_visit.items(),
-                                  key=lambda item: item[1].get("best_possible"),
-                                  reverse=True))
+            if not (adjacent_point in [p[1] for p in points_to_visit]):
+                heappush(points_to_visit, (best_possible, adjacent_point))
+                point_details.update({adjacent_point: {"min_risk": min_risk, "previous": point}})
+            elif min_risk < point_details[adjacent_point]["min_risk"]:
+                point_details.update({adjacent_point: {"min_risk": min_risk, "previous": point}})
 
     return points_to_visit
 
 
 def a_star_search(risk_levels, start, end):
-    points_to_visit = {start: {"previous": None, "min_risk": 0, "best_possible": 0}}
+    points_to_visit = []
+    point_details = {start: {"min_risk": 0, "previous": None}}
+    heappush(points_to_visit, (0, start))  #Tuple of: (best_possible, point) so that heapq orders by best_possible
     visited_points = {}
 
-    point, details = points_to_visit.popitem()
+    _, point = heappop(points_to_visit)
 
     while point != end:
-        points_to_visit = visit_point(point, details, risk_levels, points_to_visit, visited_points)
-        point, details = points_to_visit.popitem()
+        points_to_visit = visit_point(point, risk_levels, points_to_visit, visited_points, point_details)
+        _, point = heappop(points_to_visit)
 
-    return details["min_risk"]
+    return point_details[end]["min_risk"]
 
 
-# TODO: Implement "Fast Dijkstra" - when you first encounter an adjacent node, add it to a list
-# with the risk to get there from the current node. After that, ignore it if it comes up as an adjacent
-# node for a future visited node because the risk to get there can not be less than the current value it holds
-# TODO: Implement with objects instead of dicts
-# TODO: Implement DFS with pruning
-# TODO: Implement BFS
 def part1():
     risk_levels = read_input()
     print(f"{risk_levels = }")
