@@ -1,4 +1,4 @@
-TESTING = False
+TESTING = True
 TILE_MULTIPLIER = 1
 
 def read_input():
@@ -14,15 +14,13 @@ def get_cave_extents(risk_levels):
 
 
 def get_risk_level(point_x, point_y, risk_levels):
-    reference_x = point_x % len(risk_levels[0])
-    reference_y = point_y % len(risk_levels)
-    reference_risk_level = risk_levels[reference_y][reference_x] - 1
+    adjustment_x, reference_x = divmod(point_x, len(risk_levels[0]))
+    adjustment_y, reference_y = divmod(point_y, len(risk_levels))
+    reference_risk_level = risk_levels[reference_y][reference_x]
 
-    x_adjustment = point_x // len(risk_levels[0])
-    y_adjustment = point_y // len(risk_levels)
-    adjusted_risk_level = reference_risk_level + x_adjustment + y_adjustment
+    adjusted_risk_level = reference_risk_level + adjustment_x + adjustment_y
 
-    constrained_risk_level = (adjusted_risk_level % 9) + 1
+    constrained_risk_level = ((adjusted_risk_level - 1) % 9) + 1
 
     return constrained_risk_level
 
