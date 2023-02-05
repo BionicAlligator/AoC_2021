@@ -31,7 +31,7 @@ def visit_point(point, details, risk_levels, points_to_visit, visited_points):
     OFFSETS = [(-1, 0), (1, 0), (0, -1), (0, 1)]
     max_x, max_y = get_cave_extents(risk_levels)
 
-    if not (len(visited_points) % 100):
+    if not (len(visited_points) % 1000):
         print(f"Visiting point {point}   {len(visited_points)} points visited so far")
 
     visited_points.update({point: details})
@@ -52,17 +52,15 @@ def visit_point(point, details, risk_levels, points_to_visit, visited_points):
             # every step along the way being a risk level of 1
             best_possible = min_risk + max_x - adjacent_x + max_y - adjacent_y
 
-            if adjacent_point in points_to_visit:
-                if points_to_visit[adjacent_point]["min_risk"] < min_risk:
-                    continue
+            if not (adjacent_point in points_to_visit) or \
+                    min_risk < points_to_visit[adjacent_point]["min_risk"]:
+                points_to_visit.update({adjacent_point: {"previous": point,
+                                                         "min_risk": min_risk,
+                                                         "best_possible": best_possible}})
 
-            points_to_visit.update({adjacent_point: {"previous": point,
-                                                     "min_risk": min_risk,
-                                                     "best_possible": best_possible}})
-
-            points_to_visit = dict(sorted(points_to_visit.items(),
-                                          key=lambda item: item[1].get("best_possible"),
-                                          reverse=True))
+    points_to_visit = dict(sorted(points_to_visit.items(),
+                                  key=lambda item: item[1].get("best_possible"),
+                                  reverse=True))
 
     return points_to_visit
 
@@ -80,7 +78,12 @@ def a_star_search(risk_levels, start, end):
     return details["min_risk"]
 
 
+# TODO: Implement "Fast Dijkstra" - when you first encounter an adjacent node, add it to a list
+# with the risk to get there from the current node. After that, ignore it if it comes up as an adjacent
+# node for a future visited node because the risk to get there can not be less than the current value it holds
 # TODO: Implement with objects instead of dicts
+# TODO: Implement DFS with pruning
+# TODO: Implement BFS
 def part1():
     risk_levels = read_input()
     print(f"{risk_levels = }")
