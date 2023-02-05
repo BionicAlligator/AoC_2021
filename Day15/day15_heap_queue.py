@@ -30,6 +30,11 @@ def get_risk_level(point_x, point_y, risk_levels):
     return constrained_risk_level
 
 
+def extend_map(risk_levels, multiplier):
+    return [[get_risk_level(x, y, risk_levels) for x in range(len(risk_levels[0]) * multiplier)]
+            for y in range(len(risk_levels) * multiplier)]
+
+
 def visit_point(point, risk_levels, points_to_visit, visited_points, point_details):
     OFFSETS = [(-1, 0), (1, 0), (0, -1), (0, 1)]
     max_x, max_y = get_cave_extents(risk_levels)
@@ -49,13 +54,12 @@ def visit_point(point, risk_levels, points_to_visit, visited_points, point_detai
 
         if (max_x >= adjacent_x >= 0) and (max_y >= adjacent_y >= 0) and \
                 not (adjacent_point in visited_points):
-            min_risk = point_min_risk + get_risk_level(adjacent_x, adjacent_y, risk_levels)
-
-            # Lowest possible risk assuming a direct path from here to the end with
-            # every step along the way being a risk level of 1
-            best_possible = min_risk + max_x - adjacent_x + max_y - adjacent_y
+            min_risk = point_min_risk + risk_levels[adjacent_y][adjacent_x]
 
             if not (adjacent_point in [p[1] for p in points_to_visit]):
+                # Lowest possible risk assuming a direct path from here to the end with
+                # every step along the way being a risk level of 1
+                best_possible = min_risk + max_x - adjacent_x + max_y - adjacent_y
                 heappush(points_to_visit, (best_possible, adjacent_point))
                 point_details.update({adjacent_point: {"min_risk": min_risk, "previous": point}})
             elif min_risk < point_details[adjacent_point]["min_risk"]:
@@ -70,18 +74,16 @@ def a_star_search(risk_levels, start, end):
     heappush(points_to_visit, (0, start))  #Tuple of: (best_possible, point) so that heapq orders by best_possible
     visited_points = {}
 
-    _, point = heappop(points_to_visit)
-
-    while point != end:
-        visit_point(point, risk_levels, points_to_visit, visited_points, point_details)
+    while points_to_visit:
         _, point = heappop(points_to_visit)
+        visit_point(point, risk_levels, points_to_visit, visited_points, point_details)
 
     return point_details[end]["min_risk"]
 
 
 def part1():
     risk_levels = read_input()
-    print(f"{risk_levels = }")
+    # print(f"{risk_levels = }")
 
     start_point = (0, 0)
     end_point = get_cave_extents(risk_levels)
@@ -89,11 +91,8 @@ def part1():
     return a_star_search(risk_levels, start_point, end_point)
 
 def part2():
-    global TILE_MULTIPLIER
-    TILE_MULTIPLIER = 5
-
-    risk_levels = read_input()
-    print(f"{risk_levels = }")
+    risk_levels = extend_map(read_input(), 5)
+    # print(f"{risk_levels = }")
 
     start_point = (0, 0)
     end_point = get_cave_extents(risk_levels)
