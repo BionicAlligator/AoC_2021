@@ -38,42 +38,52 @@ def simulate_trajectory(speed_x, speed_y, target_x, target_y):
     return float('-inf')
 
 
-def part1():
+def analyse_trajectory_options():
     # Lowest X speed is square root of double the lowest target x coord
     # (otherwise it does not make it to the target area)
-    # Fastest X speed equals the largest target x coord (reaches far edge of target
+    # (v^2 = u^2 + 2as   -->   0 = u^2 - 2s   -->   u = root(2s))
+    #
+    # Fastest X speed equals the largest target x coord (i.e: reaches far edge of target
     # area in one step)
 
-    # On the way back down, there will always be a step where the y coord is zero
+    # When aiming for max height, on the way back down, there will always be a step
+    # where the y coord is zero
     # At this time, the downward speed will be equal to the initial upward speed
     # On the following step (the first step below the start point), the downward distance
-    # travelled will be equal to the initial y speed + 1.  If this takes the probe beyond the
-    # lowest point in the target area, it is too fast.
-    # Thus, the fastest y speed equals -(lowest target y coord + 1) [e.g: -10  --> 9]
+    # travelled will be equal to the initial y speed + 1.  If this takes the probe beyond
+    # the lowest point in the target area, it is too fast.
+    # Thus, the fastest upward y speed equals -(lowest target y coord + 1) [e.g: -10  --> 9]
+
+    # It is also possible to shoot downwards and hit the target area, so the fastest downward
+    # y speed equals the lowest target y coord (hit the target area in one step)
 
     target_x, target_y = read_input()
 
+    possible_trajectories = []
     best_height = float('-inf')
 
     min_x_speed = int(sqrt(target_x[MIN] * 2))
 
     for speed_x in range(min_x_speed, target_x[MAX] + 1):
-        for speed_y in range(0, -(target_y[MIN])):
+        for speed_y in range(target_y[MIN], -(target_y[MIN])):
             trajectory_max_height = simulate_trajectory(speed_x, speed_y, target_x, target_y)
+
+            if trajectory_max_height > float('-inf'):
+                possible_trajectories.append((speed_x, speed_y))
+
             if trajectory_max_height > best_height:
                 best_trajectory = (speed_x, speed_y)
                 best_height = trajectory_max_height
 
-    return best_height, best_trajectory
-
-def part2():
-    return
-
+    return best_height, best_trajectory, len(possible_trajectories)
 
 if TESTING:
     file = open("sampleInput.txt", "r")
 else:
     file = open("input.txt", "r")
 
-print("Part 1: ", part1())
-print("Part 2: ", part2())
+
+best_height, best_trajectory, num_possible_trajectories = analyse_trajectory_options()
+
+print(f"Part 1: {best_height = }, {best_trajectory = }")
+print(f"Part 2: {num_possible_trajectories = }")
