@@ -1,5 +1,7 @@
-import re, math
-TESTING = True
+import math
+import re
+
+TESTING = False
 
 
 class Node:
@@ -11,13 +13,13 @@ class Node:
 
     def __str__(self):
         if self.value > -1:
-            return(f"{self.value}")
+            return f"{self.value}"
         else:
-            return(f"[{self.left},{self.right}]")
+            return f"[{self.left},{self.right}]"
 
     def parse(self, num_string):
         if num_string[0].isdigit():
-            groups = re.match("^(\d+)(.*)$", num_string)
+            groups = re.match('^(\d+)(.*)$', num_string)
             self.value = int(groups[1])
             return groups[2]
 
@@ -133,7 +135,11 @@ class Node:
                 print(f"After Split: {self}")
 
     def magnitude(self):
-        return 0  # TODO: Implement this
+        if self.value > -1:
+            return self.value
+
+        return (3 * self.left.magnitude()) + (2 * self.right.magnitude())
+
 
 def read_tests(test_filename):
     tests = []
@@ -154,10 +160,16 @@ def read_tests(test_filename):
     return tests
 
 
-def read_input():
-    file.seek(0)
-    lines = [line.rstrip() for line in file]
-    return lines
+def read_input(filename):
+    nums = []
+
+    file = open(filename, "r")
+
+    for line in file:
+        nums.append(line.rstrip())
+
+    return nums
+
 
 def snailfish_add(num1, num2):
     total = Node(left=num1, right=num2)
@@ -182,7 +194,8 @@ def part1(inputs):
 
         print(f"Total = {total}")
 
-    return total
+    return total.magnitude()
+
 
 def part2():
     return
@@ -190,8 +203,8 @@ def part2():
 
 if TESTING:
     print("Part 1")
-    # tests = read_tests("sampleInput_isolation_6.txt")
-    tests = read_tests("sampleInput_additions.txt")
+    # tests = read_tests("sampleInput_additions.txt")
+    tests = read_tests("sampleInput_magnitude.txt")
 
     for expected, inputs in tests:
         print(f"\n\n{expected = }, {inputs = }")
@@ -203,10 +216,10 @@ if TESTING:
         else:
             print(f"Failed: {inputs} -> {actual}, expected {expected}")
 else:
-    file = open("input.txt", "r")
-    # print("Part 1: ", part1())
-    # print("Part 2: ", part2())
+    nums = read_input("input.txt")
 
+    print("Part 1: ", part1(nums))
+    # print("Part 2: ", part2())
 
 # def test_exploding():
 #     print("\n\nTESTING EXPLOSIONS")
