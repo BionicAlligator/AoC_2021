@@ -197,29 +197,54 @@ def part1(num_strings):
     return total.magnitude()
 
 
-def part2():
-    return
+def part2(num_strings):
+    max_magnitude = float('-inf')
+
+    for index1, num_string1 in enumerate(num_strings):
+        for index2, num_string2 in enumerate(num_strings):
+            if index1 != index2:
+                num1 = Node()
+                num1.parse(num_string1)
+
+                num2 = Node()
+                num2.parse(num_string2)
+
+                total = snailfish_add(num1, num2)
+                magnitude = total.magnitude()
+                max_magnitude = max(max_magnitude, magnitude)
+
+    return max_magnitude
 
 
 if TESTING:
-    print("Part 1")
-    # tests = read_tests("sampleInput_additions.txt")
-    tests = read_tests("sampleInput_magnitude.txt")
+    # print("Part 1")
+    # # tests = read_tests("sampleInput_additions.txt")
+    # tests = read_tests("sampleInput_magnitude.txt")
+    #
+    # for expected, inputs in tests:
+    #     actual = part1(inputs)
+    #
+    #     if expected == str(actual):
+    #         print(f"Passed: {inputs} -> {actual}\n\n")
+    #     else:
+    #         print(f"Failed: {inputs} -> {actual}, expected {expected}\n\n")
+
+    print("Part 2")
+    tests = read_tests("sampleInput_part2.txt")
 
     for expected, inputs in tests:
-        print(f"\n\n{expected = }, {inputs = }")
-
-        actual = part1(inputs)
+        actual = part2(inputs)
 
         if expected == str(actual):
-            print(f"Passed: {inputs} -> {actual}")
+            print(f"Passed: {inputs} -> {actual}\n\n")
         else:
-            print(f"Failed: {inputs} -> {actual}, expected {expected}")
+            print(f"Failed: {inputs} -> {actual}, expected {expected}\n\n")
+
 else:
     num_strings = read_input("input.txt")
 
     print("Part 1: ", part1(num_strings))
-    # print("Part 2: ", part2())
+    print("Part 2: ", part2(num_strings))
 
 
 # def test_exploding():
