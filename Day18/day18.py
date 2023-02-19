@@ -161,14 +161,14 @@ def read_tests(test_filename):
 
 
 def read_input(filename):
-    nums = []
+    num_strings = []
 
     file = open(filename, "r")
 
     for line in file:
-        nums.append(line.rstrip())
+        num_strings.append(line.rstrip())
 
-    return nums
+    return num_strings
 
 
 def snailfish_add(num1, num2):
@@ -179,18 +179,18 @@ def snailfish_add(num1, num2):
     return total
 
 
-def part1(inputs):
-    input_nums = []
+def part1(num_strings):
+    nums = []
 
-    for input_string in inputs:
+    for num_string in num_strings:
         node = Node()
-        node.parse(input_string)
-        input_nums.append(node)
+        node.parse(num_string)
+        nums.append(node)
 
-    total = input_nums[0]
+    total = nums[0]
 
-    for num in range(1, len(input_nums)):
-        total = snailfish_add(total, input_nums[num])
+    for index in range(1, len(nums)):
+        total = snailfish_add(total, nums[index])
 
         print(f"Total = {total}")
 
@@ -216,9 +216,9 @@ if TESTING:
         else:
             print(f"Failed: {inputs} -> {actual}, expected {expected}")
 else:
-    nums = read_input("input.txt")
+    num_strings = read_input("input.txt")
 
-    print("Part 1: ", part1(nums))
+    print("Part 1: ", part1(num_strings))
     # print("Part 2: ", part2())
 
 # def test_exploding():
