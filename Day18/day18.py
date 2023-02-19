@@ -2,6 +2,12 @@ import math
 import re
 
 TESTING = False
+OUTPUT_TO_CONSOLE = False
+
+
+def log(message, end="\n"):
+    if OUTPUT_TO_CONSOLE:
+        print(message, end=end)
 
 
 class Node:
@@ -28,13 +34,13 @@ class Node:
             num_string = self.left.parse(num_string[1:])
 
             if num_string[0] != ",":
-                print(f"Expecting comma but got {num_string}")
+                log(f"Expecting comma but got {num_string}")
 
             self.right = Node(parent=self)
             num_string = self.right.parse(num_string[1:])
 
         if num_string[0] != "]":
-            print(f"Expecting ] but got {num_string}")
+            log(f"Expecting ] but got {num_string}")
 
         return num_string[1:]  # Ignore ]
 
@@ -67,7 +73,7 @@ class Node:
             current_node.value += increment
 
     def explode(self):
-        print(f"Exploding {self}")
+        log(f"Exploding {self}")
 
         left_value = self.left.value
         right_value = self.right.value
@@ -93,13 +99,13 @@ class Node:
         return self.right.do_explosion(depth + 1)
 
     def split(self):
-        print(f"Splitting {self}", end="")
+        log(f"Splitting {self}", end="")
 
         self.left = Node(parent=self, value=(self.value // 2))
         self.right = Node(parent=self, value=(math.ceil(self.value / 2)))
         self.value = -1
 
-        print(f" into {self}")
+        log(f" into {self}")
 
     def do_split(self):
         if self.value > -1:  # This is a leaf node
@@ -116,7 +122,7 @@ class Node:
 
     def reduce(self):  # Only ever run on root node
         if self.parent:
-            print(f"Reduce run on non-root node: {self}")
+            log(f"Reduce run on non-root node: {self}")
             exit(1)
 
         exploded = True
@@ -126,13 +132,13 @@ class Node:
             while exploded:
                 exploded = self.do_explosion(0)
                 if exploded:
-                    print(f"After Explosion: {self}")
+                    log(f"After Explosion: {self}")
 
             exploded = True  # If there is a split, we need to check for further explosions
 
             split = self.do_split()
             if split:
-                print(f"After Split: {self}")
+                log(f"After Split: {self}")
 
     def magnitude(self):
         if self.value > -1:
@@ -192,7 +198,7 @@ def part1(num_strings):
     for index in range(1, len(nums)):
         total = snailfish_add(total, nums[index])
 
-        print(f"Total = {total}")
+        log(f"Total = {total}")
 
     return total.magnitude()
 
@@ -217,17 +223,17 @@ def part2(num_strings):
 
 
 if TESTING:
-    # print("Part 1")
-    # # tests = read_tests("sampleInput_additions.txt")
-    # tests = read_tests("sampleInput_magnitude.txt")
-    #
-    # for expected, inputs in tests:
-    #     actual = part1(inputs)
-    #
-    #     if expected == str(actual):
-    #         print(f"Passed: {inputs} -> {actual}\n\n")
-    #     else:
-    #         print(f"Failed: {inputs} -> {actual}, expected {expected}\n\n")
+    print("Part 1")
+    # tests = read_tests("sampleInput_additions.txt")
+    tests = read_tests("sampleInput_magnitude.txt")
+
+    for expected, inputs in tests:
+        actual = part1(inputs)
+
+        if expected == str(actual):
+            print(f"Passed: {inputs} -> {actual}\n\n")
+        else:
+            print(f"Failed: {inputs} -> {actual}, expected {expected}\n\n")
 
     print("Part 2")
     tests = read_tests("sampleInput_part2.txt")
@@ -248,49 +254,18 @@ else:
 
 
 # def test_exploding():
-#     print("\n\nTESTING EXPLOSIONS")
-#     test = Node()
-#     test.parse("[[[[8,7],[7,0]],[[7,8],[[7,7],15]]],[[[0,4],6],[8,7]]]")
-#     test.do_explosion(0)
-#     print(f"After explosion: {test}", end="")
-#     if str(test) == "[[[[8,7],[7,0]],[[7,15],[0,22]]],[[[0,4],6],[8,7]]]":
-#         print(" PASS")
-#     else:
-#         print(" FAIL")
+#     print("TESTING EXPLOSIONS")
 #
-#     test = Node()
-#     test.parse("[[[[[9,8],1],2],3],4]")
-#     test.do_explosion(0)
-#     print(f"After explosion: {test}", end="")
-#     if str(test) == "[[[[0,9],2],3],4]":
-#         print(" PASS")
+#     tests = read_tests("sampleInput_explosions.txt")
 #
-#     test = Node()
-#     test.parse("[7,[6,[5,[4,[3,2]]]]]")
-#     test.do_explosion(0)
-#     print(f"After explosion: {test}", end="")
-#     if str(test) == "[7,[6,[5,[7,0]]]]":
-#         print(" PASS")
+#     for expected, inputs in tests:
+#         test = Node()
+#         test.parse(inputs[0])
+#         test.do_explosion(0)
 #
-#     test = Node()
-#     test.parse("[[6,[5,[4,[3,2]]]],1]")
-#     test.do_explosion(0)
-#     print(f"After explosion: {test}", end="")
-#     if str(test) == "[[6,[5,[7,0]]],3]":
-#         print(" PASS")
-#
-#     test = Node()
-#     test.parse("[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]")
-#     test.do_explosion(0)
-#     print(f"After explosion: {test}", end="")
-#     if str(test) == "[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]":
-#         print(" PASS")
-#
-#     test = Node()
-#     test.parse("[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]")
-#     test.do_explosion(0)
-#     print(f"After explosion: {test}", end="")
-#     if str(test) == "[[3,[2,[8,0]]],[9,[5,[7,0]]]]":
-#         print(" PASS")
+#         if expected == str(test):
+#             print(f"Passed: {inputs} -> {test}\n")
+#         else:
+#             print(f"Failed: {inputs} -> {test}, expected {expected}\n")
 #
 # test_exploding()
