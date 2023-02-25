@@ -35,11 +35,10 @@ def calc_distances(scan):
             for beacon2_index in range(beacon1_index + 1, len(beacons)):
                 beacon2 = beacons[beacon2_index]
 
-                axis_distances = tuple(map(lambda i, j: abs(i-j), beacon1, beacon2))
-                manhattan_distance = sum(axis_distances)
+                axis_distances = set(map(lambda i, j: abs(i-j), beacon1, beacon2))
 
-                log(f"{beacon1} --> {beacon2} = {manhattan_distance}")
-                distances.update({(beacon1, beacon2): manhattan_distance})
+                log(f"{beacon1} --> {beacon2} = {axis_distances}")
+                distances.update({(beacon1, beacon2): axis_distances})
 
         scan_distances.append(distances)
 
