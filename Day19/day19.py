@@ -80,6 +80,28 @@ def calc_matching_distances(distances):
 
     return matching_distances
 
+
+def determine_primary_scanner(matching_distances):
+    primary_scanner = 0
+    most_overlaps = 0
+
+    for scanner_num, matches in matching_distances.items():
+        scanner_overlaps = len(matches)
+
+        # Check that we don't have any isolated scanners
+        # If we do, we can simply add the number of beacons seen by this scanner to the total
+        # However, we are not able to determine their positions relative to the other scanners
+        if scanner_overlaps == 0:
+            log(f"Scanner {scanner_num} has no overlaps")
+            exit(1)
+
+        if scanner_overlaps > most_overlaps:
+            primary_scanner = scanner_num
+            most_overlaps = scanner_overlaps
+
+    return primary_scanner
+
+
 def part1(scan):
     log(f"{scan = }")
 
@@ -89,19 +111,23 @@ def part1(scan):
     matching_distances = calc_matching_distances(distances)
     log(f"{matching_distances = }")
 
-    # We'll use the first scanner's orientation as "normal" and it's position as the origin (0,0,0)
-    # Therefore, we can add all of the first scanner's beacons directly
-    beacons = set(scan[0])
+    # We'll use the orientation of the scanner with the most overlaps as "normal"
+    # and it's position as the origin (0,0,0)
+    primary_scanner = determine_primary_scanner(matching_distances)
+    log(f"Scanner {primary_scanner} has the most overlaps")
+
+    # We can add all the primary scanner's beacons directly
+    beacons = set(scan[primary_scanner])
     log(f"{len(beacons)} {beacons = }")
 
     return
 
 
 if TESTING:
-    scan = read_input("sampleInput.txt")
-
-    print("Part 1: ", part1(scan))
+    filename = "sampleInput.txt"
 else:
-    inputs = read_input("input.txt")
+    filename = "input.txt"
 
-    print("Part 1: ", part1(inputs))
+scan = read_input(filename)
+
+print("Part 1: ", part1(scan))
