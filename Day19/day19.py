@@ -1,6 +1,10 @@
 TESTING = True
 OUTPUT_TO_CONSOLE = True
 
+# Number of beacons that must be matching between two scanners to confirm overlap of their scan regions
+REQUIRED_MATCHING_BEACONS = 12
+REQUIRED_MATCHING_DISTANCE_SETS = (REQUIRED_MATCHING_BEACONS * (REQUIRED_MATCHING_BEACONS - 1)) / 2
+
 
 def log(message, end="\n"):
     if OUTPUT_TO_CONSOLE:
@@ -45,12 +49,34 @@ def calc_distances(scan):
     return scan_distances
 
 
+def count_matching(scanner1_distances, scanner2_distances):
+    num_matching = 0
+
+    for distance_set1 in scanner1_distances.values():
+        for distance_set2 in scanner2_distances.values():
+            if distance_set1 == distance_set2:
+                num_matching += 1
+
+    return num_matching
+
+
 def calc_matching_distances(distances):
     matching_distances = {}
 
-    # Find how many of the distances match between scanner 0 and the others
-    # Any with less than 12 matching distances can be discarded - assume there is no overlap
+    # Find how many of the distance sets match between scanner 0 and the others
+    # Any with less than the required number of matching distance sets can be discarded - assume there is no overlap
     # Work down the list, starting with the one with the most matching distances - most likely to be an overlap
+
+    for scanner1_num, scanner1_distances in enumerate(distances):
+        matching_distances[scanner1_num] = {}
+
+        for scanner2_num, scanner2_distances in enumerate(distances):
+            if scanner1_num != scanner2_num:
+                num_matching = count_matching(scanner1_distances, scanner2_distances)
+
+                # Only record those where the number of matching beacons meets the requirement to confirm overlap
+                if num_matching >= REQUIRED_MATCHING_DISTANCE_SETS:
+                    matching_distances[scanner1_num][scanner2_num] = num_matching
 
     return matching_distances
 
