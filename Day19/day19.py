@@ -1,7 +1,7 @@
 from collections import defaultdict
 
 TESTING = True
-OUTPUT_TO_CONSOLE = False
+OUTPUT_TO_CONSOLE = True
 
 # Number of beacons that must be matching between two scanners to confirm overlap of their scan regions
 REQUIRED_MATCHING_BEACONS = 12
@@ -90,7 +90,7 @@ def determine_primary_scanner(matching_distances):
         # If we do, we can simply add the number of beacons seen by this scanner to the total
         # However, we are not able to determine their positions relative to the other scanners
         if scanner_overlaps == 0:
-            log(f"Scanner {scanner_num} has no overlaps")
+            print(f"Scanner {scanner_num} has no overlaps")
             exit(1)
 
         if scanner_overlaps > most_overlaps:
@@ -122,6 +122,14 @@ def map_beacons(common_beacons):
     mappings = {}
 
     for scanner1_beacon in scanner1_beacon_set:
+        max_occurrences = max(potential_beacon_mappings[scanner1_beacon].values())
+
+        # There should be n-1 occurrences of the same mapping (where n is the number of matching beacons
+        # required to confirm overlapping scan regions)
+        if max_occurrences != (REQUIRED_MATCHING_BEACONS - 1):
+            print(f"Inconclusive: Require {REQUIRED_MATCHING_BEACONS - 1} occurrences of the same mapping for {scanner1_beacon} but have {max_occurrences}")
+            exit(1)
+
         scanner2_beacon = max(potential_beacon_mappings[scanner1_beacon],
                               key=potential_beacon_mappings[scanner1_beacon].get)
         mappings.update({scanner1_beacon: scanner2_beacon})
@@ -138,6 +146,8 @@ def normalise_beacons(matching_beacons, scanner1):
             # e.g: ((a, b) -> (c, d), (a, e) -> (f, c)) suggests that scanner1's beacon 'a' corresponds to
             # scanner2's beacon 'c'.  This can be further verified by checking the other instances of beacon 'a'
             corresponding_beacons = map_beacons(common_beacons)
+
+
 
     return normalised_beacons
 
