@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-TESTING = True
+TESTING = False
 OUTPUT_TO_CONSOLE = True
 
 # Number of beacons that must be matching between two scanners to confirm overlap of their scan regions
@@ -62,19 +62,29 @@ def extract_matching_beacons(scanner1_distances, scanner2_distances):
     return matching_beacons
 
 
-def find_matching_beacons(distances):
+def find_matching_beacons(distances, all_beacons):
     matching_beacons = {}
 
     for scanner1_num, scanner1_distances in enumerate(distances):
         matching_beacons[scanner1_num] = {}
 
         for scanner2_num, scanner2_distances in enumerate(distances):
-            if scanner1_num != scanner2_num:
+            if scanner1_num < scanner2_num:
                 matching = extract_matching_beacons(scanner1_distances, scanner2_distances)
+
+                if len(matching) not in [0, REQUIRED_MATCHING_DISTANCE_SETS]:
+                    print(f"Found {len(matching)} matching distances between scanner {scanner1_num} and scanner {scanner2_num}")
 
                 # Only record those where the number of matching beacons meets the requirement to confirm overlap
                 if len(matching) >= REQUIRED_MATCHING_DISTANCE_SETS:
                     matching_beacons[scanner1_num][scanner2_num] = matching
+
+                for _, (s2b1, s2b2) in matching:
+                    if s2b1 in all_beacons[scanner2_num]:
+                        all_beacons[scanner2_num].remove(s2b1)
+
+                    if s2b2 in all_beacons[scanner2_num]:
+                        all_beacons[scanner2_num].remove(s2b2)
 
     return matching_beacons
 
@@ -224,8 +234,16 @@ def part1(scan):
     distances = calc_distances(scan)
     log(f"{distances = }")
 
-    matching_beacons = find_matching_beacons(distances)
-    log(f"{matching_beacons = }")
+    all_beacons = scan.copy()
+
+    matching_beacons = find_matching_beacons(distances, all_beacons)
+    # log(f"{matching_beacons = }")
+
+    num_beacons = sum([len(scanner_beacons) for scanner_beacons in all_beacons])
+    log(f"{num_beacons = }: {all_beacons = }")
+    log(f"{num_beacons = }")
+
+    exit(1)
 
     beacons = normalise_beacon_locations(matching_beacons)
     log(f"{len(beacons)} {beacons = }")
