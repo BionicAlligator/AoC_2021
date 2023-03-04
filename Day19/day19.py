@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-TESTING = True
+TESTING = False
 OUTPUT_TO_CONSOLE = True
 
 # Number of beacons that must be matching between two scanners to confirm overlap of their scan regions
@@ -201,41 +201,57 @@ def merge_scan_data(scan, distances):
         log(f"{matching_beacons = }")
 
         for scanner_num, scanner_matches in matching_beacons.items():
-            scanners_to_check.append(scanner_num)
+            if scanner_num in scan:
+                scanners_to_check.append(scanner_num)
 
-            # To determine which beacon is which, we must look at two or more pairs from scanner 1
-            # with the same beacon and see which of the beacons in the corresponding scanner 2 pairs is the same
-            # e.g: ((a, b) -> (c, d), (a, e) -> (f, c)) suggests that scanner1's beacon 'a' corresponds to
-            # scanner2's beacon 'c'.  This can be further verified by checking the other instances of beacon 'a'
-            corresponding_beacons = map_beacons(scanner_matches)
-            log(f"{corresponding_beacons = }")
+                # To determine which beacon is which, we must look at two or more pairs from scanner 1
+                # with the same beacon and see which of the beacons in the corresponding scanner 2 pairs is the same
+                # e.g: ((a, b) -> (c, d), (a, e) -> (f, c)) suggests that scanner1's beacon 'a' corresponds to
+                # scanner2's beacon 'c'.  This can be further verified by checking the other instances of beacon 'a'
+                corresponding_beacons = map_beacons(scanner_matches)
+                log(f"{corresponding_beacons = }")
 
-            translation, inversion = calc_translation_and_inversion(corresponding_beacons)
-            offset = calc_offset(corresponding_beacons, translation, inversion)
-            log(f"Scanner {scanner_num} {translation = }, {inversion = }, position/{offset = }")
+                translation, inversion = calc_translation_and_inversion(corresponding_beacons)
+                offset = calc_offset(corresponding_beacons, translation, inversion)
+                log(f"Scanner {scanner_num} {translation = }, {inversion = }, position/{offset = }")
 
-            # The offset equals the position of the second scanner relative to the origin
-            scanner_positions.update({scanner_num: tuple(offset)})
+                # The offset equals the position of the second scanner relative to the origin
+                scanner_positions.update({scanner_num: tuple(offset)})
 
-            scanner_beacons = scan.pop(scanner_num)
+                scanner_beacons = scan.pop(scanner_num)
 
-            for beacon in scanner_beacons:
-                normalised_beacons.add(normalise(beacon, translation, inversion, offset))
+                for beacon in scanner_beacons:
+                    normalised_beacons.add(normalise(beacon, translation, inversion, offset))
 
-            scanner_distances = distances.pop(scanner_num)
-            converted_scanner_distances = {}
+                scanner_distances = distances.pop(scanner_num)
+                converted_scanner_distances = {}
 
-            for (beacon1, beacon2), distance in scanner_distances.items():
-                normalised_beacon1 = normalise(beacon1, translation, inversion, offset)
-                normalised_beacon2 = normalise(beacon2, translation, inversion, offset)
-                converted_scanner_distances.update({(normalised_beacon1, normalised_beacon2): distance})
+                for (beacon1, beacon2), distance in scanner_distances.items():
+                    normalised_beacon1 = normalise(beacon1, translation, inversion, offset)
+                    normalised_beacon2 = normalise(beacon2, translation, inversion, offset)
+                    converted_scanner_distances.update({(normalised_beacon1, normalised_beacon2): distance})
 
-            distances.update({scanner_num: converted_scanner_distances})
+                distances.update({scanner_num: converted_scanner_distances})
 
         distances.pop(current_scanner)
         current_scanner = scanners_to_check.pop()
 
     return scanner_positions, normalised_beacons
+
+
+def find_max_scanner_separation(scanner_positions):
+    max_separation = float('-inf')
+
+    for scanner1_index, scanner1 in scanner_positions.items():
+        for scanner2_index in range(scanner1_index + 1, len(scanner_positions)):
+            scanner2 = scanner_positions[scanner2_index]
+
+            manhattan_distance = sum(map(lambda i, j: abs(i - j), scanner1, scanner2))
+            log(f"{scanner1} --> {scanner2} = {manhattan_distance}")
+
+            max_separation = max(max_separation, manhattan_distance)
+
+    return max_separation
 
 
 def part1(scan):
@@ -246,7 +262,7 @@ def part1(scan):
 
     scanner_positions, beacon_positions = merge_scan_data(scan, distances)
 
-    return f"{len(beacon_positions)} beacons, {scanner_positions = }"
+    return f"{len(beacon_positions)} beacons, {scanner_positions = }, max separation = {find_max_scanner_separation(scanner_positions)}"
 
 
 if TESTING:
