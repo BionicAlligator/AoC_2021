@@ -1,3 +1,5 @@
+# Cut down version to complete Part 1 (just determines the number of beacons)
+# Not tidied up
 from collections import defaultdict
 
 TESTING = False
