@@ -1,8 +1,9 @@
 from utils import log
 
 class Dirac:
-    def __init__(self, die, player1, player2, squares=10):
+    def __init__(self, winning_score, die, player1, player2, squares=10):
         self.squares = squares
+        self.winning_score = winning_score
         self.die = die
         self.player1 = player1
         self.player2 = player2
@@ -18,9 +19,9 @@ class Dirac:
         return ((current_pos + dice_total - 1) % self.squares) + 1
 
     def winner(self):
-        if self.player1.get_score() >= 1000:
+        if self.player1.get_score() >= self.winning_score:
             return self.player1
-        elif self.player2.get_score() >= 1000:
+        elif self.player2.get_score() >= self.winning_score:
             return self.player2
         else:
             return False

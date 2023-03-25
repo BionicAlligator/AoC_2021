@@ -1,4 +1,4 @@
-OUTPUT_TO_CONSOLE = True
+OUTPUT_TO_CONSOLE = False
 
 
 def log(message, end="\n"):
