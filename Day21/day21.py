@@ -53,7 +53,7 @@ def calc_new_scores(scores, new_positions, current_player):
 # --- PART 2 ---
 # Given that we roll three times, the possible outcomes are:
 #   3, 4, 5, 6, 7, 8, 9
-# There are many ways to achieve some of these:
+# There are several ways to achieve some of these:
 # 3 = 1,1,1 [1 universe]
 # 4 = 1,1,2 / 1,2,1 / 2,1,1 [3 universes]
 # 5 = 1,2,2 / 2,1,2 / 2,2,1 / 1,1,3 / 1,3,1 / 3,1,1 [6 universes]
@@ -64,15 +64,18 @@ def calc_new_scores(scores, new_positions, current_player):
 # So instead of 27 'universes' needing to be tracked, we can track the number of universes
 # covered by each of these scores
 #
-# We start with a single universe defined by its state, as:
+# We start with a single universe defined by its state:
 #  {positions = (P1start, P2start), scores = (0, 0), current_player = P1}
 # i.e: universes = {((P1start, P2start), (0, 0), P1) : 1}
-# We then loop through all universes and generate the resulting new universes that could result
+#
+# We then loop through all universes and generate the new universes that could result
 # from each of the 7 possible dice combinations on the next player's turn:
 #  new_universes = {((P1start+3, P2start), (P1start+3, 0), P2) : 1, ((P1start+4, P2start), (P1start+4, 0), P2): 3, etc}
-# We check this list of new universes for any where a score >= 21.  Those universe totals are added to the total
-# number of universes that result in a win for the player that has reached or exceeded 21 points and those
-# universes are removed from the list of universes requiring further turns to be played
+#
+# We check this list of new universes for any where a score >= 21.  Those universe totals are added to the
+# total number of universes that result in a win for the player that has reached or exceeded 21 points and
+# those universes are removed from the list of universes requiring further turns to be played.
+#
 # Continue until there are no universes left in the list.
 def part2(filename):
     WINNING_SCORE = 21
