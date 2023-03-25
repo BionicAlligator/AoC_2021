@@ -1,13 +1,10 @@
 import re
+from utils import log
+from dirac import Dirac
+from die import Die
+from player import Player
 
-TESTING = True
-OUTPUT_TO_CONSOLE = True
-
-
-def log(message, end="\n"):
-    if OUTPUT_TO_CONSOLE:
-        print(message, end=end)
-
+TESTING = False
 
 def read_input(filename):
     starting_positions = {}
@@ -23,7 +20,14 @@ def read_input(filename):
 
 def part1(filename):
     starting_positions = read_input(filename)
-    return
+    deterministic_die = Die()
+    player1 = Player("Player 1", starting_positions[1])
+    player2 = Player("Player 2", starting_positions[2])
+    game = Dirac(deterministic_die, player1, player2)
+
+    game.play_game()
+
+    return game.get_result()
 
 
 if TESTING:
