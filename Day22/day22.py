@@ -178,81 +178,56 @@ def part2(filename):
 
     for step_num, (on_off, x_range1, y_range1, z_range1) in enumerate(reboot_steps):
         if on_off == "on":
-            subtractions = []
-            additions = []
-            # subtractions2 = []
-            # additions2 = []
-            # subtractions3 = []
-            # additions3 = []
-
-            #If this is the last step, just add the entire range
-            if step_num != len(reboot_steps) - 1:
-                for _, x_range2, y_range2, z_range2 in reboot_steps[step_num + 1:]:
-                    if intersects_3d(x_range1, y_range1, z_range1, x_range2, y_range2, z_range2):
-                        subtractions.append(intersection(x_range1, y_range1, z_range1, x_range2, y_range2, z_range2))
-
-
-            for area_num, (x_area1, y_area1, z_area1) in enumerate(subtractions):
-                if area_num < (len(subtractions) - 1):
-                    for x_area2, y_area2, z_area2 in subtractions[area_num + 1:]:
-                        if contains_3d(x_area1, y_area1, z_area1, x_area2, y_area2, z_area2):
-                            # Delete area1
-
-                        if contains_3d(x_area2, y_area2, z_area2, x_area1, y_area1, z_area1):
-                            # Delete area2
-
-                        if intersects_3d(x_area1, y_area1, z_area1, x_area2, y_area2, z_area2):
-                            additions.append(intersection(x_area1, y_area1, z_area1, x_area2, y_area2, z_area2))
-
-            # for area_num, (x_area1, y_area1, z_area1) in enumerate(subtractions):
-            #     if area_num < (len(subtractions) - 1):
-            #         for x_area2, y_area2, z_area2 in subtractions[area_num + 1:]:
-            #             if intersects_3d(x_area1, y_area1, z_area1, x_area2, y_area2, z_area2):
-            #                 additions.append(intersection(x_area1, y_area1, z_area1, x_area2, y_area2, z_area2))
-            #
-            # for area_num, (x_area1, y_area1, z_area1) in enumerate(additions):
-            #     if area_num < (len(additions) - 1):
-            #         for x_area2, y_area2, z_area2 in additions[area_num + 1:]:
-            #             if intersects_3d(x_area1, y_area1, z_area1, x_area2, y_area2, z_area2):
-            #                 subtractions2.append(intersection(x_area1, y_area1, z_area1, x_area2, y_area2, z_area2))
-            #
-            # for area_num, (x_area1, y_area1, z_area1) in enumerate(subtractions2):
-            #     if area_num < (len(subtractions2) - 1):
-            #         for x_area2, y_area2, z_area2 in subtractions2[area_num + 1:]:
-            #             if intersects_3d(x_area1, y_area1, z_area1, x_area2, y_area2, z_area2):
-            #                 additions2.append(intersection(x_area1, y_area1, z_area1, x_area2, y_area2, z_area2))
-            #
-            # for area_num, (x_area1, y_area1, z_area1) in enumerate(additions2):
-            #     if area_num < (len(additions2) - 1):
-            #         for x_area2, y_area2, z_area2 in additions2[area_num + 1:]:
-            #             if intersects_3d(x_area1, y_area1, z_area1, x_area2, y_area2, z_area2):
-            #                 subtractions3.append(intersection(x_area1, y_area1, z_area1, x_area2, y_area2, z_area2))
-            #
-            # for area_num, (x_area1, y_area1, z_area1) in enumerate(subtractions3):
-            #     if area_num < (len(subtractions3) - 1):
-            #         for x_area2, y_area2, z_area2 in subtractions3[area_num + 1:]:
-            #             if intersects_3d(x_area1, y_area1, z_area1, x_area2, y_area2, z_area2):
-            #                 additions3.append(intersection(x_area1, y_area1, z_area1, x_area2, y_area2, z_area2))
-
             total_on += volume(x_range1, y_range1, z_range1)
 
-            for x_area, y_area, z_area in subtractions:
-                total_on -= volume(x_area, y_area, z_area)
+            #If this is the last step, just add the entire range (no adjustments necessary)
+            if step_num != len(reboot_steps) - 1:
+                # Start with subtractions
+                multiplier = -1
+                adjustments = []
 
-            for x_area, y_area, z_area in additions:
-                total_on += volume(x_area, y_area, z_area)
+                for _, x_range2, y_range2, z_range2 in reboot_steps[step_num + 1:]:
+                    if intersects_3d(x_range1, y_range1, z_range1, x_range2, y_range2, z_range2):
+                        adjustments.append(intersection(x_range1, y_range1, z_range1, x_range2, y_range2, z_range2))
 
-            # for x_area, y_area, z_area in subtractions2:
-            #     total_on -= volume(x_area, y_area, z_area)
-            #
-            # for x_area, y_area, z_area in additions2:
-            #     total_on += volume(x_area, y_area, z_area)
-            #
-            # for x_area, y_area, z_area in subtractions3:
-            #     total_on -= volume(x_area, y_area, z_area)
-            #
-            # for x_area, y_area, z_area in additions3:
-            #     total_on += volume(x_area, y_area, z_area)
+                while adjustments:
+                    reduced_adjustments = []
+
+                    while adjustments:
+                        x_area1, y_area1, z_area1 = adjustments.pop()
+
+                        is_contained = False
+                        area_num = 0
+
+                        while area_num < len(adjustments):
+                            x_area2, y_area2, z_area2 = adjustments[area_num]
+
+                            if contains_3d(x_area1, y_area1, z_area1, x_area2, y_area2, z_area2):
+                                # Area1 is a subset of another area - just ignore it
+                                is_contained = True
+                                break
+
+                            if contains_3d(x_area2, y_area2, z_area2, x_area1, y_area1, z_area1):
+                                # Area2 is a subset of another area - ignore it
+                                adjustments.pop(area_num)
+                                continue
+
+                            area_num += 1
+
+                        if not is_contained:
+                            reduced_adjustments.append((x_area1, y_area1, z_area1))
+
+                    for x_area, y_area, z_area in reduced_adjustments:
+                        total_on += (volume(x_area, y_area, z_area) * multiplier)
+
+                    multiplier = -multiplier
+                    adjustments = []
+
+                    for area_num, (x_area1, y_area1, z_area1) in enumerate(reduced_adjustments):
+                        if area_num < (len(reduced_adjustments) - 1):
+                            for x_area2, y_area2, z_area2 in reduced_adjustments[area_num + 1:]:
+                                if intersects_3d(x_area1, y_area1, z_area1, x_area2, y_area2, z_area2):
+                                    adjustments.append(intersection(x_area1, y_area1, z_area1, x_area2, y_area2, z_area2))
 
     return total_on
 
