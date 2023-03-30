@@ -1,6 +1,6 @@
 import re
 
-TESTING = "NormalA"
+TESTING = "Advanced"
 OUTPUT_TO_CONSOLE = True
 
 INIT_RANGE = (-50, 50)
@@ -153,6 +153,37 @@ def reduce_reboot_steps(reboot_steps):
     return reboot_steps
 
 
+def add_adjustment(adjustments, x_adj1, y_adj1, z_adj1, multiplier):
+    sub_or_superset = False
+
+    adjustment_num = 0
+
+    while adjustment_num < len(adjustments):
+        x_adj2, y_adj2, z_adj2 = adjustments[adjustment_num]
+
+        # If this overlap is equal to an existing one, delete both of them
+        if (x_adj1, y_adj1, z_adj1) == (x_adj2, y_adj2, z_adj2):
+            sub_or_superset = True
+            adjustments.pop(adjustment_num)
+            adjustment_num -= 1
+
+        # If this overlap is a superset of an existing overlap,
+        # replace the existing one with this one
+        elif contains_3d(x_adj2, y_adj2, z_adj2, x_adj1, y_adj1, z_adj1):
+            adjustments[adjustment_num] = (x_adj1, y_adj1, z_adj1)
+            sub_or_superset = True
+
+        # If this overlap is a subset of an existing overlap, ignore it
+        elif contains_3d(x_adj1, y_adj1, z_adj1, x_adj2, y_adj2, z_adj2):
+            sub_or_superset = True
+
+        adjustment_num += 1
+
+    # Otherwise, add this overlap to the list
+    if not sub_or_superset:
+        adjustments.append((x_adj1, y_adj1, z_adj1))
+
+
 # Part 2
 # Start at beginning and work toward end:
 # For each step A, if A is ON:
@@ -172,7 +203,7 @@ def part2(filename):
     reboot_steps = read_input(filename)
     log(f"{reboot_steps = }")
 
-    reboot_steps = reduce_reboot_steps(reboot_steps)
+    # reboot_steps = reduce_reboot_steps(reboot_steps)
 
     total_on = 0
 
@@ -181,53 +212,42 @@ def part2(filename):
             total_on += volume(x_range1, y_range1, z_range1)
 
             #If this is the last step, just add the entire range (no adjustments necessary)
-            if step_num != len(reboot_steps) - 1:
+            if step_num < len(reboot_steps) - 1:
+                x_area1 = x_range1
+                y_area1 = y_range1
+                z_area1 = z_range1
+
                 # Start with subtractions
                 multiplier = -1
+                areas = []
                 adjustments = []
 
                 for _, x_range2, y_range2, z_range2 in reboot_steps[step_num + 1:]:
-                    if intersects_3d(x_range1, y_range1, z_range1, x_range2, y_range2, z_range2):
-                        adjustments.append(intersection(x_range1, y_range1, z_range1, x_range2, y_range2, z_range2))
+                    areas.append((x_range2, y_range2, z_range2))
+
+                for area in areas:
+                    if intersects_3d(x_area1, y_area1, z_area1, *area):
+                        adjustments.append(intersection(x_area1, y_area1, z_area1, *area))
+                        # add_adjustment(adjustments, *intersection(x_area1, y_area1, z_area1, *area))
+
+                for adjustment in adjustments:
+                    total_on += (volume(*adjustment) * multiplier)
+
+                multiplier = -multiplier
 
                 while adjustments:
-                    reduced_adjustments = []
-
-                    while adjustments:
-                        x_area1, y_area1, z_area1 = adjustments.pop()
-
-                        is_contained = False
-                        area_num = 0
-
-                        while area_num < len(adjustments):
-                            x_area2, y_area2, z_area2 = adjustments[area_num]
-
-                            if contains_3d(x_area1, y_area1, z_area1, x_area2, y_area2, z_area2):
-                                # Area1 is a subset of another area - just ignore it
-                                is_contained = True
-                                break
-
-                            if contains_3d(x_area2, y_area2, z_area2, x_area1, y_area1, z_area1):
-                                # Area2 is a subset of another area - ignore it
-                                adjustments.pop(area_num)
-                                continue
-
-                            area_num += 1
-
-                        if not is_contained:
-                            reduced_adjustments.append((x_area1, y_area1, z_area1))
-
-                    for x_area, y_area, z_area in reduced_adjustments:
-                        total_on += (volume(x_area, y_area, z_area) * multiplier)
-
-                    multiplier = -multiplier
+                    areas = adjustments.copy()
                     adjustments = []
 
-                    for area_num, (x_area1, y_area1, z_area1) in enumerate(reduced_adjustments):
-                        if area_num < (len(reduced_adjustments) - 1):
-                            for x_area2, y_area2, z_area2 in reduced_adjustments[area_num + 1:]:
-                                if intersects_3d(x_area1, y_area1, z_area1, x_area2, y_area2, z_area2):
-                                    adjustments.append(intersection(x_area1, y_area1, z_area1, x_area2, y_area2, z_area2))
+                    for area_num, (x_area1, y_area1, z_area1) in enumerate(areas[:-1]):
+                        for area in areas[area_num + 1:]:
+                            if intersects_3d(x_area1, y_area1, z_area1, *area):
+                                add_adjustment(adjustments, *intersection(x_area1, y_area1, z_area1, *area), multiplier)
+
+                    for adjustment in adjustments:
+                        total_on += (volume(*adjustment) * multiplier)
+
+                    multiplier = -multiplier
 
     return total_on
 
