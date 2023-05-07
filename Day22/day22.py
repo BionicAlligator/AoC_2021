@@ -1,7 +1,8 @@
 import re
+import time
 
-TESTING = "Advanced"
-OUTPUT_TO_CONSOLE = True
+TESTING = "NormalB"
+OUTPUT_TO_CONSOLE = False
 
 INIT_RANGE = (-50, 50)
 
@@ -199,6 +200,8 @@ def add_adjustment(adjustments, x_adj1, y_adj1, z_adj1, multiplier):
 #   Start with volume of A
 #     For each range in the subtraction list, subtract the volume of the range
 #     For each range in the addition list, add the volume of the range
+
+# sum( volume(cuboid) - volume(union(cuboid ^ other_cuboids)) )
 def part2(filename):
     reboot_steps = read_input(filename)
     log(f"{reboot_steps = }")
@@ -207,47 +210,104 @@ def part2(filename):
 
     total_on = 0
 
-    for step_num, (on_off, x_range1, y_range1, z_range1) in enumerate(reboot_steps):
+    for step_num, (on_off, x_area1, y_area1, z_area1) in enumerate(reboot_steps):
+        log(f"{step_num = }")
+        layer_areas = [[]]
+        layers = len(reboot_steps) - step_num
+        # layer_areas = [[] for _ in range(layers)]
+        layer = 0
+
         if on_off == "on":
-            total_on += volume(x_range1, y_range1, z_range1)
+            log("This step turns cubes on")
+            layer_areas[layer].append((x_area1, y_area1, z_area1))
 
-            #If this is the last step, just add the entire range (no adjustments necessary)
-            if step_num < len(reboot_steps) - 1:
-                x_area1 = x_range1
-                y_area1 = y_range1
-                z_area1 = z_range1
+            log(f"Layer {layer} areas = {len(layer_areas[layer])}")
 
-                # Start with subtractions
-                multiplier = -1
-                areas = []
-                adjustments = []
+            #If this is the last step, just add the entire range (no other layers to worry about)
+            # if step_num < len(reboot_steps) - 1:
+            #     log("Not the last step in the reboot sequence")
+        # if layers > 1:
+            areas = []
+            layer_areas.append([])
+            layer += 1
 
-                for _, x_range2, y_range2, z_range2 in reboot_steps[step_num + 1:]:
-                    areas.append((x_range2, y_range2, z_range2))
+            for _, x_area2, y_area2, z_area2 in reboot_steps[step_num + 1:]:
+                areas.append((x_area2, y_area2, z_area2))
 
-                for area in areas:
-                    if intersects_3d(x_area1, y_area1, z_area1, *area):
-                        adjustments.append(intersection(x_area1, y_area1, z_area1, *area))
-                        # add_adjustment(adjustments, *intersection(x_area1, y_area1, z_area1, *area))
+            for area1 in layer_areas[layer - 1]:
+                for area2 in areas:
+                    if intersects_3d(*area1, *area2):
+                        intersect = intersection(*area1, *area2)
+                        # if intersect in layer_areas[layer]:
+                        #     layer_areas[layer].remove(intersect)
+                        # else:
+                        layer_areas[layer].append(intersect)
 
-                for adjustment in adjustments:
-                    total_on += (volume(*adjustment) * multiplier)
+            # while len(layer_areas[layer]) > 1:
+            while layer < layers:
+                log(f"Layer {layer} areas = {len(layer_areas[layer])} {layer_areas =}")
+                # time.sleep(1)
+                layer_areas.append([])
+                layer += 1
 
-                multiplier = -multiplier
+                for area1_num, area1 in enumerate(layer_areas[layer - 1]):
+                    for area2_num, area2 in enumerate(layer_areas[layer - 1][area1_num + 1:]):
+                        if intersects_3d(*area1, *area2):
+                            intersect = intersection(*area1, *area2)
+                            # if intersect in layer_areas[layer]:
+                            #     layer_areas[layer].remove(intersect)
+                            # else:
+                            layer_areas[layer].append(intersect)
 
-                while adjustments:
-                    areas = adjustments.copy()
-                    adjustments = []
+        multiplier = 1
 
-                    for area_num, (x_area1, y_area1, z_area1) in enumerate(areas[:-1]):
-                        for area in areas[area_num + 1:]:
-                            if intersects_3d(x_area1, y_area1, z_area1, *area):
-                                add_adjustment(adjustments, *intersection(x_area1, y_area1, z_area1, *area), multiplier)
+        log("Calculating number of cubes that are on")
 
-                    for adjustment in adjustments:
-                        total_on += (volume(*adjustment) * multiplier)
+        for layer in layer_areas:
+            for area in layer:
+                total_on += volume(*area) * multiplier
 
-                    multiplier = -multiplier
+            multiplier = -multiplier
+
+            # total_on += volume(x_range1, y_range1, z_range1)
+            #
+            # #If this is the last step, just add the entire range (no adjustments necessary)
+            # if step_num < len(reboot_steps) - 1:
+            #     x_area1 = x_range1
+            #     y_area1 = y_range1
+            #     z_area1 = z_range1
+            #
+            #     # Start with subtractions
+            #     multiplier = -1
+            #     areas = []
+            #     adjustments = []
+            #
+            #     for _, x_range2, y_range2, z_range2 in reboot_steps[step_num + 1:]:
+            #         areas.append((x_range2, y_range2, z_range2))
+            #
+            #     for area in areas:
+            #         if intersects_3d(x_area1, y_area1, z_area1, *area):
+            #             adjustments.append(intersection(x_area1, y_area1, z_area1, *area))
+            #             # add_adjustment(adjustments, *intersection(x_area1, y_area1, z_area1, *area))
+            #
+            #     for adjustment in adjustments:
+            #         total_on += (volume(*adjustment) * multiplier)
+            #
+            #     multiplier = -multiplier
+            #
+            #     while adjustments:
+            #         areas = adjustments.copy()
+            #         adjustments = []
+            #
+            #         for area_num, (x_area1, y_area1, z_area1) in enumerate(areas[:-1]):
+            #             for area in areas[area_num + 1:]:
+            #                 if intersects_3d(x_area1, y_area1, z_area1, *area):
+            #                     add_adjustment(adjustments, *intersection(x_area1, y_area1, z_area1, *area), multiplier)
+            #
+            #         for adjustment in adjustments:
+            #             total_on += (volume(*adjustment) * multiplier)
+            #
+            #         multiplier = -multiplier
 
     return total_on
 
@@ -258,6 +318,8 @@ elif TESTING == "Normal":
     filename = "sampleInput1.txt"
 elif TESTING == "NormalA":
     filename = "sampleInput1a.txt"
+elif TESTING == "NormalB":
+    filename = "sampleInput1b.txt"
 elif TESTING == "Advanced":
     filename = "sampleInput2.txt"
 else:
