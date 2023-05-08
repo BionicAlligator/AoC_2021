@@ -111,6 +111,7 @@ def reduce_reboot_steps(reboot_steps):
     return reboot_steps
 
 
+# Uses include-exclude method to determine union of sets
 def volume_of_union(areas, levels_remaining):
     log(f"{levels_remaining =}")
     union_volume = 0
