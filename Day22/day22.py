@@ -5,6 +5,7 @@ OUTPUT_TO_CONSOLE = False
 
 INIT_RANGE = (-50, 50)
 
+
 def log(message, end="\n"):
     if OUTPUT_TO_CONSOLE:
         print(message, end=end)
@@ -23,21 +24,6 @@ def read_input(filename):
         reboot_steps.append((on_off, x_range, y_range, z_range))
 
     return reboot_steps
-
-
-def determine_range(reboot_steps):
-    x_range = (float('inf'), float('-inf'))
-    y_range = (float('inf'), float('-inf'))
-    z_range = (float('inf'), float('-inf'))
-
-    for on_off, x, y, z in reboot_steps:
-        if on_off == "on":
-            x_range = (min(x[0], x_range[0]), max(x[1], x_range[1]))
-            y_range = (min(y[0], y_range[0]), max(y[1], y_range[1]))
-            z_range = (min(z[0], z_range[0]), max(z[1], z_range[1]))
-
-    log(f"{x_range = }, {y_range = }, {z_range = }")
-    return x_range, y_range, z_range
 
 
 def intersects(range1, range2):
@@ -85,35 +71,7 @@ def volume(x_range, y_range, z_range):
     return x * y * z
 
 
-# Ideas:
-# 1. With set of 3D coords:
-#   Start from bottom and work up
-#   Set on or off only cubes that are not already in the output set
-#   Count total set to on
-#
-# 2. Determine intersections
-#
-# 3. Create a set of all "on" coords
-#   This works for -50..50 (part 1) but not for -100000..100000 (part 2)
-def part1(filename):
-    reboot_steps = read_input(filename)
-    log(f"{reboot_steps = }")
-
-    on = set()
-
-    for on_off, (x1, x2), (y1, y2), (z1, z2) in reboot_steps:
-        if intersects_init_area((x1, x2), (y1, y2), (z1, z2)):
-            for x in range(constrain(x1), constrain(x2) + 1):
-                for y in range(constrain(y1), constrain(y2) + 1):
-                    for z in range(constrain(z1), constrain(z2) + 1):
-                        if on_off == "on":
-                            on.add((x, y, z))
-                        else:
-                            on.discard((x, y, z))
-
-    return len(on)
-
-
+# NOT USED - thought it might simplify but doesn't have much effect on the given input instructions
 # Start at end and work toward beginning:
 # For each step A, compare against every earlier step B
 #   If A contains B, delete B (doesn't matter whether A and B are ON or OFF steps)
@@ -153,41 +111,9 @@ def reduce_reboot_steps(reboot_steps):
     return reboot_steps
 
 
-def add_adjustment(adjustments, x_adj1, y_adj1, z_adj1, multiplier):
-    sub_or_superset = False
-
-    adjustment_num = 0
-
-    while adjustment_num < len(adjustments):
-        x_adj2, y_adj2, z_adj2 = adjustments[adjustment_num]
-
-        # If this overlap is equal to an existing one, delete both of them
-        if (x_adj1, y_adj1, z_adj1) == (x_adj2, y_adj2, z_adj2):
-            sub_or_superset = True
-            adjustments.pop(adjustment_num)
-            adjustment_num -= 1
-
-        # If this overlap is a superset of an existing overlap,
-        # replace the existing one with this one
-        elif contains_3d(x_adj2, y_adj2, z_adj2, x_adj1, y_adj1, z_adj1):
-            adjustments[adjustment_num] = (x_adj1, y_adj1, z_adj1)
-            sub_or_superset = True
-
-        # If this overlap is a subset of an existing overlap, ignore it
-        elif contains_3d(x_adj1, y_adj1, z_adj1, x_adj2, y_adj2, z_adj2):
-            sub_or_superset = True
-
-        adjustment_num += 1
-
-    # Otherwise, add this overlap to the list
-    if not sub_or_superset:
-        adjustments.append((x_adj1, y_adj1, z_adj1))
-
-
 def volume_of_union(areas, levels_remaining):
     log(f"{levels_remaining =}")
     union_volume = 0
-
 
     for area_num, area1 in enumerate(areas):
         union_volume += volume(*area1)
@@ -205,21 +131,25 @@ def volume_of_union(areas, levels_remaining):
     return union_volume
 
 
-# Part 2
-# Start at beginning and work toward end:
-# For each step A, if A is ON:
-#   Compare A against every later step B (regardless ON or OFF)
-#     If A and B intersect:
-#       Add intersection to "subtraction" list
-#
-#   For each area X in subtraction list:
-#     Compare against every later area Y in the subtraction list
-#       If X intersects Y:
-#         Add the intersection to the addition list
-#
-#   Start with volume of A
-#     For each range in the subtraction list, subtract the volume of the range
-#     For each range in the addition list, add the volume of the range
+def part1(filename):
+    reboot_steps = read_input(filename)
+    log(f"{reboot_steps = }")
+
+    on = set()
+
+    for on_off, (x1, x2), (y1, y2), (z1, z2) in reboot_steps:
+        if intersects_init_area((x1, x2), (y1, y2), (z1, z2)):
+            for x in range(constrain(x1), constrain(x2) + 1):
+                for y in range(constrain(y1), constrain(y2) + 1):
+                    for z in range(constrain(z1), constrain(z2) + 1):
+                        if on_off == "on":
+                            on.add((x, y, z))
+                        else:
+                            on.discard((x, y, z))
+
+    return len(on)
+
+
 def part2(filename):
     reboot_steps = read_input(filename)
     log(f"{reboot_steps = }")
